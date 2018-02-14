@@ -1,0 +1,14 @@
+node_modules/
+src/node_modules/
+Renders/*.svg
+Renders/*.ps
+Renders/*.lst
+Proofs/*.svg
+Proofs/*.ps
+Proofs/*.lst
+~*.xls
+~*.xlsx
+~*.doc
+~*.docx
+~*.tmp
+Assets/Raw/

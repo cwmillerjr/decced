@@ -1,0 +1,34 @@
+{
+    "build" : "default",
+    "builds" :{
+        "default": {
+            "cards": [
+                "DefaultExample",
+                "CustomExample"
+            ],
+            "renderPath": "../Renders",
+            "cleanup": [
+                "ps",
+                "svg"
+            ],
+            "tasks": {
+                "render" : true,
+                "convert" : true,
+                "compile" : true,
+                "clean" : ["ps", "svg"]
+            }
+        }
+    },
+    "options" : {
+        "blankCards" : "0s",
+        "blackout" : false,
+        "backs" : true,
+        "cardBlackout" : "../Common",
+        "cardBlank" : "../Common",
+        "cropMarks" : "back",
+        "cardPositions" : {
+                "x": [0, 63.5, 127, 190.5],
+                "y":[-108, -196.85]
+            }
+    }
+}

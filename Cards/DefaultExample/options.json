@@ -1,0 +1,10 @@
+{
+    "cardName_" : "DefaultExample",
+    "defaultManifest":
+    {
+        "Name" : "",
+        "Points" : "0",
+        "Color" : "Blank",
+        "Hero" : "error"
+    }
+}

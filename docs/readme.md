@@ -23,6 +23,7 @@ The second example ***CustomExample*** shows a more advanced card where there ar
 ### Installing
 #### DeCCed project
 You'll first need to download the project from [https://github.com/cwmillerjr/decced](https://github.com/cwmillerjr/decced).  If you are not proficient with git or do not want to use it, you can simply download the project in a zip file like so:
+
 ![Download](https://cwmillerjr.github.io/decced/download.png)
 
 #### Node.js

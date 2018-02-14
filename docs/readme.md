@@ -21,3 +21,17 @@ Looking in the Cards directory you'll find two examples.  The first is the conve
 The second example ***CustomExample*** shows a more advanced card where there are pips on the card that need to be shown or hidden based on the manifest file.
 
 ### Installing
+#### DeCCed project
+You'll first need to download the project from [https://github.com/cwmillerjr/decced](https://github.com/cwmillerjr/decced).  If you are not proficient with git or do not want to use it, you can simply download the project in a zip file like so:
+![Download](https://cwmillerjr.github.io/decced/download.png)
+
+#### Node.js
+DeCCed is a Node.js application, so you'll need an install of Node.js to use it.  This is pretty simple.  You just run the installer that is provided on the homepage of [Node.js](https://nodejs.org/).  I usually use the LTS version because reasons.
+
+Once you've installed that, you can now create SVG files with DeCCed, but those are difficult to work with and hard to print 1:1 scale, so I also added support to convert all of it into a PDF I could print on both sides, which required two other programs.
+
+#### Inkscape
+Inkscape is a free program I used to create the card templates.  It also is used to convert the SVG output files into Post Script files as an intermediate step in converting it to PDF.  You can find Inkscape at [Inkscape.com](https://inkscape.org/).  As long as you install it in the standard location, DeCCed will be able to find it.
+
+#### Ghost Script
+The final program needed was Ghost Script.  This program can do many amazing things, of which I used it to smash the PS files created in the last step into a single PDF file for printing, etc.  You can find it at [ghostscript.com](https://www.ghostscript.com/download/gsdnld.html) and again, as long as you install it in the default location, DeCCed will find it.

@@ -19,7 +19,7 @@ cliArguments
 
     var defaultConfigJson = {};
     if (fs.existsSync("defaults.json")) {
-        defaultConfigJson= fs.readFileSync("defaults.json", { encoding: 'utf8' });
+        defaultConfigJson= JSON.parse(fs.readFileSync("defaults.json", { encoding: 'utf8' }));
     }
 
     var configJson = fs.readFileSync("../config.json", { encoding: 'utf8' });
@@ -85,7 +85,13 @@ genData.outputFile = genData.outputFile || 'cards.pdf';
 
 _.assign(genData,{"totalSheetCount": 0,"files": []});
 
-if (genData.tasks['render']) {
+var temp;
+temp = genData.tasks['render'];
+if (typeof(temp) === 'undefined') {
+    temp = true;
+}
+
+if (temp) {
     console.info('Render');
     _.forEach(genData.cards, function(card){
         console.info(' <- ' + card);
@@ -98,7 +104,11 @@ if (genData.tasks['render']) {
     console.info('Rendered');
 }
 
-if (genData.tasks['convert']) {
+temp = genData.tasks['convert'];
+if (typeof(temp) === 'undefined') {
+    temp = true;
+}
+if (temp) {
     console.info('Convert');
     var inkscape = 'inkscape.exe';
     if (_.isString(genData.tasks['convert'])) {
@@ -138,7 +148,11 @@ if (genData.tasks['convert']) {
     console.info('Converted');
 }
 
-if (genData.tasks['compile']) {
+temp = genData.tasks['compile'];
+if (typeof(temp) === 'undefined') {
+    temp = true;
+}
+if (temp) {
     var gs = 'gswin64c.exe';
     var found = null;
     if (_.isString(genData.tasks['compile'])) {
@@ -204,14 +218,17 @@ if (genData.tasks['compile']) {
 }
 
 var clean = genData.tasks['clean'];
+if (clean === true || typeof(clean) === 'undefined'){
+    clean = genData.cleanup || ["ps","svg"];
+}
 if (clean) {
     var cleanup;
     if (_.isArray(clean)){
         cleanup = clean;
     }
-    else {
-        cleanup = genData.cleanup || []
-    }
+    // else {
+    //     cleanup = genData.cleanup || ["ps","svg"];
+    // }
     
     console.info('Clean');
     cbu.purgeFiles(renderPath, cleanup||[], function(file){

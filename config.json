@@ -38,8 +38,7 @@
                 "blackout" : false,
                 "backs" : false,
                 "breakoutPdfs" : true,
-                "skipMainPdf" : true,
-                "manifestSuffix" : "_proof"
+                "skipMainPdf" : true
             }
         }
     },

@@ -1,5 +1,5 @@
 # DeCCed Card Builder
-**DeCCed** /dɛkt/ was created as part of the Christmas Chaos project.  I knew I did not want to have to manage updating hundreds of cards in layout editors, etc, as I made revisions and that I had no easy way to merge data files in the programs I had available.  I had used SVG in my professional work and had a pretty good understanding of how to navigate its XML files.  I figured since SVG is just XML, I should be able to just modify the XML directly, which is just what I did.  **DeCCed** is just the De"Christmas Chaos"ed version of this utility.
+**DeCCed** /dɛkt/ was created as part of the Christmas Chaos project.  I knew I did not want to have to manage updating hundreds of cards in layout editors, etc., as I made revisions and that I had no easy way to merge data files in the programs I had available.  I had used SVG in my professional work and had a pretty good understanding of how to navigate its XML files.  I figured since SVG is just XML, I should be able to just modify the XML directly, which is just what I did.  **DeCCed** is just the De"Christmas Chaos"ed version of this utility.
 
 ## Basic Architecture
 **DeCCed** is configuration and "card driver" powered. 
@@ -65,4 +65,76 @@ By default, you'll find the cards in the renders directory under the path you un
 Since I produced my cards by printing on one side of linen and then laminating those with cardstock between, I needed a way to align the front and backs of the cards.  These are the black dots.  The dots are spaced the standard distance for a three ring binder.  I punched holes at these spots and then used a jig to align them when I glued them.
 
 ### Crop Marks
-The cross marks are the cut lines.  I have them only on the backs since I try to make sure the backs are always as uniform as possible since that is the side you'd be able to read if they are face down.  If the face is a bit off, that is only noticeble after you've drawn the card.  I used a arm sheer to cut the cards.
+The cross marks are the cut lines.  I have them only on the backs since I try to make sure the backs are always as uniform as possible since that is the side you'd be able to read if they are face down.  If the face is a bit off, that is only noticeable after you've drawn the card.  I used a arm shear to cut the cards.
+
+## CardFace.svg
+The base image used for a card is CardFace.svg.  I use Inkscape to create these files and, while this isn't a primer on Inkscape, you will need to know how to edit the XML inside Inkscape.  The following assumes you have loaded Inkscape and opened Cards/CustomExample/CardFace.svg.
+
+### XML Editor
+To view the XML Editor, inside Inkscape, press Shift-Ctrl-X. You may have to expand the tree, but you want to find the node that is either id "Card_T" or "Card$" (more about this later).  It should look like below, in a fashion.
+
+![xmlgroup](xmlgroup.png)
+
+### XML Sections
+In the XML viewer you'll see various nodes with id's set to specific values.  The main points will be discussed.
+
+#### About \_T and $
+All tags you want to be able to map from a card manifest to a card must have \_T or $ in the id.  This will be replaced in the copies with the card position on the page, therefore Card\_T would become Card1, Card2, Card3, ..., Card8.  \_T and $ are interchangeable and considered the same, although $ is the preferred naming and \_T is depredated.
+
+### Card Group
+The card you're prototyping must all be contained inside a group.  This group will be copied and placed on the page by DeCCed at run time.  The name of the group should be Card$.  Anything outside of this group will not be part of the card and will not be copied or numbered.
+
+### Replacements
+The default replacements in DeCCed will look for id's named with a $ or \_T.  For example, in the above snippet, Name\_T and Color\_T will become Name1...Name8, and Color1...Color8.  These represent the name and color text on the card.  In the default manifest, the columns marked Name and Color will map to these objects.
+
+#### Images
+In this example, Hero\_T.  With images in the DefaultExample, you can give the relative path to the image (from the target directory, ../Renders by default), or simply just the name of a png without the extension.  If you give the name without the extension, DeCCed will probe for the png using the current Card directory's Assets folder, the Card directory, and then the root Assets folder.  Therefore you can share images between cards by putting them in the ./Assets directory.  For the CustomExample, you'll need to call `probleImage` to find the image because it does not manipulate the value unless you explicitly ask it to.
+
+### Custom Replacements
+In this example, you see the collection of Pip$n (Pip$1, Pip$2, etc.)  These will become Pip11, Pip12...Pip18, Pip21...Pip28, etc.  In the custom example, there is code that manually maps the svg file and actually will make these pips hidden or shown based on values from the manifest.  This allows you great control over how your cards are rendered.
+
+## Card Driver
+See [CustomExample/card.js](https://github.com/cwmillerjr/decced/blob/master/Cards/CustomExample/card.js) for and example of a card driver.  The code is commented and will be the most up to date explanation.
+
+## options.json
+### Default Example
+If you look at the options.json file for the default config, you'll see a simple options file.  It only contains the Name and a default manifest record to use if there are more cards left on a page than there are manifest records to fill it.
+
+```
+{
+    "cardName_" : "DefaultExample",
+    "defaultManifest":
+    {
+        "Name" : "",
+        "Points" : "0",
+        "Color" : "Blank",
+        "Hero" : "error"
+    }
+}
+```
+If you want to use the default default and use the Card directory name as the card name, a simple empty (`{}`) json file would do.  You do need an empty one to let DeCCed know that is a card directory you want to use.
+
+### Other options
+Universal options can be set in the config.json in the root directory.  (More about the config.json file below.)  To add options to the config.json file, create a node called "options" like such. 
+```
+{
+    "options" : {
+        "blankCards" : "0s",
+        "blackout" : false,
+        "backs" : true,
+        "cardBlackout" : "../Common",
+        "cardBlank" : "../Common",
+        "cropMarks" : "back"
+    }
+}
+```
+
+### Available Options
+Options are what make DeCCed easy to prototype with becasue I can easily change what I'm rendering and different levels of detail, etc.
+
+|Option|Effect|Values|
+|----|----|----|
+|backs|Render the backs of the cards.|true(default), false|
+|blackout|Render a large black box on the back of the front of the card|false(default), true|
+|blankCards|Render a number of cards or number of sheets of cards with the default manifest at the end of the manifest cards|0(default), any number, follow with an s to imply sheets of cards|
+|cropMarks|Render Crop Marks on the image|***WORK IN PROGRESS END***|

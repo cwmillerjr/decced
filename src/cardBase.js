@@ -42,7 +42,7 @@ function CardBase(options) {
             parsedRows.splice(0,1);
         }
         var mappedObjects = _.map(parsedRows, function (parsedRow) {
-            var mappedObject = _self.options.manifestMapper(parsedRow, _self.options);
+            var mappedObject = _self.options.manifestMapper.call(_self, parsedRow, _self.options);
             return mappedObject;
         });
         return mappedObjects;
@@ -237,7 +237,7 @@ function CardBase(options) {
         manifest.forEach(function (manifest) {
         
                 //map the cards on the page
-                options.svgMapper(manifest, cardIndex, svgMap, options);
+                options.svgMapper.call(_self, manifest, cardIndex, svgMap, options);
                 cardIndex++;
                 //render a page once you've rendered the number of cards on the page (currently only 8 is available)
                 if (cardIndex > 8) {
@@ -269,10 +269,10 @@ function CardBase(options) {
             else {
                 x = m[1] * 1;
             }
-            var empty = options.manifestMapper();
+            var empty = options.manifestMapper.call(_self);
             for (;x>0;x--) {
                 //map the cards on the page
-                options.svgMapper(empty, cardIndex, svgMap, options);
+                options.svgMapper.call(_self, empty, cardIndex, svgMap, options);
                 cardIndex++;
                 //render a page once you've rendered the number of cards on the page (currently only 8 is available)
                 if (cardIndex > 8) {
@@ -295,7 +295,7 @@ function CardBase(options) {
         }
         //if you have a partial sheet, pad out the remaining unfilled positions (otherwise they will render the previous page's cards) and save the partial sheet
         if (cardIndex != 1 && cardIndex < 9) {
-            var empty = options.manifestMapper();
+            var empty = options.manifestMapper.call(_self);
             while (cardIndex < 9) {
                 //what's the difference?
                 if (svgMap['Card' + cardIndex]) {
@@ -303,7 +303,7 @@ function CardBase(options) {
                     cbu.setDisplay(svgMap['Card' + cardIndex].$, false);
                 }
                 else {
-                    options.svgMapper(empty, cardIndex, svgMap, options);
+                    options.svgMapper.call(_self, empty, cardIndex, svgMap, options);
                 }
                 cardIndex++;
             }
@@ -328,7 +328,8 @@ function CardBase(options) {
         if (typeof(keepStandardAlignmentHoles) === 'undefined'){
             keepStandardAlignmentHoles = true;
         }
-        if (! new RegExp(',' + cropMarkKey + ',','i').test(`,${options.cropMarks},`)){
+        if (options.cropMarks && (options.cropMarks === cropMarkKey || _.isArray(options.cropMarks) || _.includes(options.cropMarks, cropMarkKey))) {
+        //if (! new RegExp(',' + cropMarkKey + ',','i').test(`,${options.cropMarks},`)){
             traverse(dom).forEach(function (node) {
                 if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
                     _.forEach(this.parent.node.g, function(alignmentNode){
@@ -454,6 +455,18 @@ function CardBase(options) {
         return map;
     }
 
+    this.probeImage = function (imageName, options){
+        if (!imageName) {
+            imageName = '';
+        } else if (imageName.indexOf('/') < 0) {
+            if (imageName.indexOf('.' < 0)){
+                imageName = imageName + '.png';
+            }
+            imageName = cbu.probePaths(imageName, options.assetPath, options.cardPath, cbu.mergePath(options.rootPath, 'Assets'));
+        }
+        return imageName;
+    }
+
     function defaultSvgMapper (manifest, cardIndex, svgMap, options) {
         var map = defaultNodeMapper(cardIndex, svgMap, options);
         if (options.columnNames){
@@ -461,14 +474,15 @@ function CardBase(options) {
                 var nodeMap = map[options.columnNames[i]];
                 if (nodeMap._raw.type === 'image'){
                     var val = manifest[options.columnNames[i]];
-                    if (!val) {
-                        val = '';
-                    } else if (val.indexOf('/') < 0) {
-                        if (val.indexOf('.' < 0)){
-                            val = val + '.png';
-                        }
-                        val = cbu.probePaths(val, options.assetPath, options.cardPath, cbu.mergePath(options.rootPath, 'Assets'));
-                    }
+                    // if (!val) {
+                    //     val = '';
+                    // } else if (val.indexOf('/') < 0) {
+                    //     if (val.indexOf('.' < 0)){
+                    //         val = val + '.png';
+                    //     }
+                    //     val = cbu.probePaths(val, options.assetPath, options.cardPath, cbu.mergePath(options.rootPath, 'Assets'));
+                    // }
+                    val = _self.probeImage(val, options);
                     nodeMap.val(val);
                     nodeMap.setDisplay(!!manifest[options.columnNames[i]]);
                 }

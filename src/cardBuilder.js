@@ -17,6 +17,11 @@ cliArguments
     var cardsDir = cbu.mergePath(rootDir, 'Cards');
     var assetsDir = cbu.mergePath(rootDir, 'Assets');
 
+    var defaultConfigJson = {};
+    if (fs.existsSync("defaults.json")) {
+        defaultConfigJson= fs.readFileSync("defaults.json", { encoding: 'utf8' });
+    }
+
     var configJson = fs.readFileSync("../config.json", { encoding: 'utf8' });
     var configs = JSON.parse(configJson);
     var configToUse = cliArguments.config || configs.build || "default";
@@ -24,7 +29,7 @@ cliArguments
     if (!genData){
         throw `build ${configToUse} is not defined.`;
     }
-    var buildOptions = _.assign({}, configs.options || {}, genData.options || {});
+    var buildOptions = _.assign(defaultConfigJson, configs.options || {}, genData.options || {});
 
     var cardsDirFolders = fs.readdirSync(cardsDir);
     _.forEach(cardsDirFolders, function (cardFolder){

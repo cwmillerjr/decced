@@ -137,7 +137,6 @@ Options are what make DeCCed easy to prototype with becasue I can easily change 
 |blankCards|Render a number of cards or number of sheets of cards with the default manifest at the end of the manifest cards|string of format nnn(s), i.e. 0s, 3, etc.  "s" denotes a full sheet of cards, not just 1 per number.|"0s"|
 |cardBack|Name of the card to pull the card backing from.  This allows you to reuse another card's back side for multiple cards.|string card path|null|
 |cropMarks|Render Crop Marks on the image|string or an array of strings|["back"]|
-|
 
 ## config.json
 Looking in the root directory, you'll see a file named config.json.  This contains the configuration for the application, mainly universal options as well as build definitions.  It's basic format is below.
@@ -199,8 +198,6 @@ This node is a hash of the various tasks to perform in the build.
 |Name|Effect|Type|Default|
 |--|--|--|--|
 |render|If true, render the svg files for the cards.|boolean|true|
-|convert|If true, convert the svg files into post script files as an intermediate step|boolean|true
+|convert|If true, convert the svg files into post script files as an intermediate step|boolean|true|
 |compile|If true, compile all the post script files into one PDF file for printing.|boolean|true|
 |clean|Clean the files created with the extensions specified|string array|[]|
-
-

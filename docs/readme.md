@@ -100,7 +100,7 @@ See [CustomExample/card.js](https://github.com/cwmillerjr/decced/blob/master/Car
 ### Default Example
 If you look at the options.json file for the DefaultExample card, you'll see a simple options file.  It only contains the Name and a default manifest record to use if there are more cards left on a page than there are manifest records to fill it.
 
-```
+```JSON
 {
     "cardName_" : "DefaultExample",
     "defaultManifest":
@@ -116,7 +116,7 @@ If you want to use the default default and use the Card directory name as the ca
 
 ### Other options
 Universal options can be set in the config.json in the root directory.  (More about the config.json file below.)  To add options to the config.json file, create a node called "options" like such. 
-```
+```JSON
 {
     "options" : {
         "blankCards" : "0s",
@@ -130,20 +130,65 @@ Universal options can be set in the config.json in the root directory.  (More ab
 ### Available Options
 Options are what make DeCCed easy to prototype with becasue I can easily change what I'm rendering and different levels of detail, etc.
 
-|Option|Effect|type|default|
-|----|----|----|---|
-|backs|Render the backs of the cards.|boolean|`true`|
-|blackout|Render a large black box on the back of the front of the card|boolean|`false`|
-|blankCards|Render a number of cards or number of sheets of cards with the default manifest at the end of the manifest cards|string of format nnn(s), i.e. 0s, 3, etc.  "s" denotes a full sheet of cards, not just 1 per number.|`"0s"`|
-|breakoutPdfs|If true, create a pdf file for each card.|boolean|`false`|
-|cardBack|Name of the card to pull the card backing from.  This allows you to reuse another card's back side for multiple cards.|string card path|`null`|
-|cropMarks|Render Crop Marks on the image|string or an array of strings|`["back"]`|
-|skipMainPdf|If true, do not render cards.pdf.  Use in conjunction with breakoutPdfs.|boolean|`false`|
+#### backs
+Type: `boolean`
+
+If true, Render the backs of the cards.
+
+Default: `true`
+
+#### blackout
+Type: `boolean`
+
+If true, Render a large black box on the back of the front of the card to not allow light to shine through the card.
+
+Default: `false`
+
+#### blankCards
+Type: `string`
+
+Format: `"amount[s]"`
+
+The number of blank cards, with the default manifest, to render at the end of the file.  DeCCed will always render at least enough to fill the last sheet.  If you'd like to have at least a few full sheets of blanks printed, put "s" after the number to denote you want that number of full sheets.
+
+Default: `"0s"`
+
+#### breakoutPdfs
+Type: `boolean`
+
+If true, create a pdf file for each card. i.e. DefaultExample.pdf, CustomExample.pdf
+
+Default: `false`
+
+#### cardBack
+Type: `string`
+
+Format: [cardName|cardPath]
+
+Name of the card to pull the card backing from.  This allows you to reuse another card's back side for multiple cards.
+
+Default: current card path
+
+#### cropMarks
+Type: `boolean` or `string[]`
+
+Format: `[[["front"],["back"]]]`, i.e. `["front","back"]`, etc.
+
+Render Crop Marks on the image.  If the value is simply true, the default is used.
+
+Default: `["back"]`
+
+#### skipMainPdf
+Type: `bool`
+
+If true, do not render cards.pdf.  Use in conjunction with breakoutPdfs.
+
+Default: `false`
 
 ## config.json
 Looking in the root directory, you'll see a file named config.json.  This contains the configuration for the application, mainly universal options as well as build definitions.  It's basic format is below.
 
-```
+```JSON
 {
     "build" : "proofs",
     "builds" :{
@@ -189,20 +234,41 @@ Looking in the root directory, you'll see a file named config.json.  This contai
 ### build
 The build node denotes which of the different builds the app will use.  The default is default.  You can also specify this value from the command line using the `--config` switch.
 
-### builds
+## builds
 The builds hash contains any build definitions you want to define.  Each of these defines which cards to render and how to render them.
 
-#### cards
+* cards
 The node cards is an array of cards to include in this build.  This allows you to exclude certain cards for special cases, like only printing out a subset of cards to replace one set during playtesting.
 
-#### tasks
+* tasks
 This node is a hash of the various tasks to perform in the build.
 
-|Name|Effect|Type|Default|
-|----|----|----|----|
-|render|If true, render the svg files for the cards.|boolean|`true`|
-|convert|If true, convert the svg files into post script files as an intermediate step|boolean or path to Inkscape|`true`|
-|compile|If true, compile all the post script files into one PDF file for printing.|boolean or path to ghostscript|`true`|
-|clean|Clean the files created with the extensions specified|string array|`["ps","svg"]`|
+### Available Tasks
 
-You only need to specify the paths to Inkscape or ghostscript if they are not in your path environment variable or are not installed in the default locations.
+#### render
+Type: `boolean`
+
+If true, render the svg files for the cards.
+
+Default: `true`
+
+#### convert
+Type: `boolean` or `string`
+
+If true, convert the svg files into post script files as an intermediate step.  The value is either the path to Inkscape if it was installed in a non-standard directory, or is not in your path environment variable; or simply true or false if it was not.
+
+Default: `true`
+
+#### compile
+Type: `boolean` or `string`
+
+If true, compile all the post script files into one PDF file for printing.  The value is either the path to ghostscript if it was installed in a non-standard directory, or is not in your path environment variable; or simply true or false if it was not.
+
+Default: `true`
+
+#### clean
+Type: `boolean` or `string[]`
+
+Clean the files created with the extensions specified.  If simply `true` the default is used.
+
+Default: `["ps","svg"]`

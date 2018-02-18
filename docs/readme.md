@@ -22,9 +22,7 @@ The second example ***CustomExample*** shows a more advanced card where there ar
 
 ## Installing
 ### DeCCed project
-You'll first need to download the project from [https://github.com/cwmillerjr/decced](https://github.com/cwmillerjr/decced).  If you are not proficient with git or do not want to use it, you can simply download the project in a zip file like so:
-
-![Download](https://cwmillerjr.github.io/decced/download.png)
+You'll first need to download the project from [https://github.com/cwmillerjr/decced/archive/v0.1.zip](https://github.com/cwmillerjr/decced/archive/v0.1.zip).  Unzip this file to a location of your choice.
 
 ### Node.js
 DeCCed is a Node.js application, so you'll need an install of Node.js to use it.  This is pretty simple.  You just run the installer that is provided on the homepage of [Node.js](https://nodejs.org/).  I usually use the LTS version because reasons.

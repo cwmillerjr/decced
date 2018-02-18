@@ -163,7 +163,7 @@ Default: `false`
 #### cardBack
 Type: `string`
 
-Format: [cardName|cardPath]
+Format: `[cardName|cardPath]`
 
 Name of the card to pull the card backing from.  This allows you to reuse another card's back side for multiple cards.
 

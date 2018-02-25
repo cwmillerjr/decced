@@ -78,6 +78,8 @@ function CardBase(options) {
             svgTemplate = fs.readFileSync(svgTemplate);
         }
 
+        var alignTemplate = fs.readFileSync("../Internals/Alignment._svg");
+
         //divine the manifest to use
         var format = 'tab';
         if (!manifest) {
@@ -93,17 +95,19 @@ function CardBase(options) {
         //parse the manifest into manifest objects
         manifest = _self.ManifestLoader(manifest, format);
 
-        //parse the svg into xml for preprocessing
-        x2j.parseString(svgTemplate, function (e, svgDom) {
-            removeAbsoluteReferences(svgDom);
-            var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
-            generateCardSheets(e, svgDom, data);
-            totalSheetCount = data.totalSheetCount;
+        x2j.parseString(alignTemplate, function (e, alignDom) {
+            //parse the svg into xml for preprocessing
+            x2j.parseString(svgTemplate, function (e, svgDom) {
+                removeAbsoluteReferences(svgDom);
+                var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
+                generateCardSheets(e, svgDom, data, alignDom);
+                totalSheetCount = data.totalSheetCount;
+            });
         });
         generationData.totalSheetCount = totalSheetCount;
     }
 
-    function generateCardSheets (e, svgDom, data)
+    function generateCardSheets (e, svgDom, data, alignDom)
     {
         var manifest = data.manifest;
         var totalSheetCount = data.totalSheetCount;
@@ -114,6 +118,19 @@ function CardBase(options) {
         var options = _self.options;
         var renderPath =  data.renderPath;
         var generationData = data.generationData;
+
+        if (svgDom.svg.g){
+            for (var i = 0; i < svgDom.svg.g.length; i++){
+                var found = false;
+                if (svgDom.svg.g[i] && svgDom.svg.g[i].$ && svgDom.svg.g[i].$.id == "AlignmentLayer"){
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                svgDom.svg.g.push(alignDom.g);
+            }
+        }
 
         setCropMarks (svgDom, 'front', options);
 

@@ -1,5 +1,5 @@
 {
-    "build" : "default",
+    "build" : "poker",
     "builds" :{
         "default": {
             "cards": [
@@ -39,6 +39,19 @@
                 "backs" : false,
                 "breakoutPdfs" : true,
                 "skipMainPdf" : true
+            }
+        },
+        "poker": {
+            "cards": [
+                "PokerExample"
+            ],
+            "renderPath": "../Renders",
+            "cleanup": [
+                "ps",
+                "svg"
+            ],
+            "tasks": {
+                "render" : true
             }
         }
     },

@@ -152,7 +152,7 @@ function CardBase(options) {
 
             //figure out if the svg needs positions to be offset
             var cardPositionTranslations = [];
-            var xOff = -63.5;
+            var xOff = 0;//-63.5;
             if (options.translateOffset && options.translateOffset.x) {
                 xOff = options.translateOffset.x;
             }

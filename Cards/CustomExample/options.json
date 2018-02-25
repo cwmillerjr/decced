@@ -1,3 +1,6 @@
 {
-    "cardBack" : "DefaultExample"
+    "cardBack" : "DefaultExample",
+    "translateOffset" : {
+        "x" : -63.5
+    }
 }

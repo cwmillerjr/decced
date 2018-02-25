@@ -15,7 +15,7 @@ var pipMap = [
     [1,3,15,17], //4
     [1,3,9,15,17], //5
     [1,3,8,10,15,17], //6
-    [1,3,8,10,14,15,17], //7
+    [1,3,4,8,10,15,17], //7
     [1,3,4,8,10,14,15,17], //8
     [1,3,5,7,9,11,13,15,17], //9
     [1,3,4,5,7,11,13,14,15,17], //10
@@ -32,7 +32,7 @@ function manifestMapper (columns, options) {
     var cardManifest = {};
     cardManifest.suit = columns[currentColumn++] || '';
     //Change the manifest value into the Glyph id we'll be using throughout.
-    cardManifest.suit = cardManifest.suit.substr(0,1).toUpper() + cardManifest.suit.substr(1).toLower() + "Glyph";
+    cardManifest.suit = '#' + cardManifest.suit.substr(0,1).toUpperCase() + cardManifest.suit.substr(1).toLowerCase() + "Glyph";
     cardManifest.rank = columns[currentColumn++] || '';
     return cardManifest;
 }
@@ -48,7 +48,7 @@ function nodeMapper (cardIndex, svgMap, options) {
         RankUp: NW.wrap('RankUp', cardIndex, svgMap, 'flow'),
         RankDown: NW.wrap('RankDown', cardIndex, svgMap, 'flow'),
         SuitUp: NW.wrap('SuitUp', cardIndex, svgMap, 'image'),
-        SuitDown: NW.wrap('SuitUp', cardIndex, svgMap, 'image'),
+        SuitDown: NW.wrap('SuitDown', cardIndex, svgMap, 'image'),
         //Here we use a loop to create an array of pip node wrappers.
         //This is just easier to work with than putting them all in the
         //flat hash, but it is totally acceptable to put them in the flat
@@ -67,8 +67,12 @@ function svgMapper (manifest, cardIndex, svgMap, options) {
     //We create a node wrapper object map here.
     var map = options.nodeMapper(cardIndex, svgMap, options);
     //Set the values from the manifest file.
-    map.RankUp.val(manifest.rank);
-    map.RankDown.val(manifest.rank);
+    var rankText = manifest.rank;
+    if (rankText == 1){
+        rankText = "A";
+    }
+    map.RankUp.val(rankText);
+    map.RankDown.val(rankText);
     map.SuitUp.val(manifest.suit);
     map.SuitDown.val(manifest.suit);
     //Here we loop through the pips in the map

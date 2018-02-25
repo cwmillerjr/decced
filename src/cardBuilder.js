@@ -195,7 +195,10 @@ if (temp) {
         console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
     });
     //TODO: Handle errors
-    var actualOutputFile = cbu.nextFileName(renderPath, genData.outputFile);
+    var actualOutputFile = cbu.mergePath(renderPath, genData.outputFile);
+    if (!buildOptions.replaceOutput) {
+        actualOutputFile = cbu.nextFileName(renderPath, genData.outputFile);
+    }
     if (!buildOptions.skipMainPdf){
         var y = spawnSync(gs, ['-r300x300','-sDEVICE=pdfwrite','-o', actualOutputFile].concat(_.map(genData.files,function(file){return file.fileName.replace('.svg','.ps');})), {cwd:renderPath});
     }
@@ -208,7 +211,10 @@ if (temp) {
             _.forEach(g, function(file){
                 console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
             });
-            actualOutputFile = cbu.nextFileName(renderPath, cardName + '.pdf');
+            actualOutputFile = cbu.mergePath(renderPath, cardName + '.pdf');
+            if (!buildOptions.replaceOutput) {
+                actualOutputFile = cbu.nextFileName(renderPath, cardName + '.pdf');
+            }
             var y = spawnSync(gs, ['-r300x300','-sDEVICE=pdfwrite','-o', actualOutputFile].concat(_.map(g,function(file){return file.fileName.replace('.svg','.ps');})), {cwd:renderPath});
             console.info(' -> ' + actualOutputFile);
             console.info('Compiled');

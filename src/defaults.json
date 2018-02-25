@@ -1,12 +1,13 @@
 {
-    "blankCards" : "0s",
-    "blackout" : false,
     "backs" : true,
+    "blackout" : false,
+    "blankCards" : "0s",
     "cardBlackout" : "../Common",
-    "cardBlank" : "../Common",
-    "cropMarks" : ["back"],        
+    "cardBlank" : "../Common",        
     "cardPositions" : {
             "x": [0, 63.5, 127, 190.5],
             "y":[-108, -196.85]
-        }
+        },
+    "cropMarks" : ["back"],
+    "replaceOutput" : true
 }

@@ -78,7 +78,7 @@ function CardBase(options) {
             svgTemplate = fs.readFileSync(svgTemplate);
         }
 
-        var alignTemplate = fs.readFileSync("../Internals/Alignment._svg");
+        var alignTemplate = fs.readFileSync("./Alignment._svg");
 
         //divine the manifest to use
         var format = 'tab';
@@ -120,8 +120,8 @@ function CardBase(options) {
         var generationData = data.generationData;
 
         if (svgDom.svg.g){
+            var found = false;
             for (var i = 0; i < svgDom.svg.g.length; i++){
-                var found = false;
                 if (svgDom.svg.g[i] && svgDom.svg.g[i].$ && svgDom.svg.g[i].$.id == "AlignmentLayer"){
                     found = true;
                     break;

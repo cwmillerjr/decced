@@ -1,6 +1,6 @@
 {
-  "name": "cardbuilder",
-  "version": "1.0.0",
+  "name": "decced",
+  "version": "0.2.0",
   "description": "",
   "main": "./src/cardBuilder.js",
   "dependencies": {

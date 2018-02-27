@@ -1,10 +1,11 @@
 {
-    "build" : "poker",
+    "build" : "default",
     "builds" :{
         "default": {
             "cards": [
                 "DefaultExample",
-                "CustomExample"
+                "CustomExample",
+                "PokerExample"
             ],
             "renderPath": "../Renders",
             "cleanup": [
@@ -21,7 +22,8 @@
         "proofs": {
             "cards": [
                 "DefaultExample",
-                "CustomExample"
+                "CustomExample",
+                "PokerExample"
             ],
             "renderPath": "../Proofs",
             "cleanup": [

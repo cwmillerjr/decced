@@ -7,6 +7,8 @@ var srcPath = '../../src/';
 var CardBase = require(srcPath + 'CardBase').CardBase;
 var cbu = require(srcPath + 'cardBuilderUtilities').cardBuilderUtilities;
 var NW = require(srcPath + 'nodeWrapper').NodeWrapper;
+const math = require('mathjs');
+
 var pipMap = [
     [], //blank
     [9], //A
@@ -49,6 +51,7 @@ function nodeMapper (cardIndex, svgMap, options) {
         RankDown: NW.wrap('RankDown', cardIndex, svgMap, 'flow'),
         SuitUp: NW.wrap('SuitUp', cardIndex, svgMap, 'image'),
         SuitDown: NW.wrap('SuitDown', cardIndex, svgMap, 'image'),
+        Face: NW.wrap('Face', cardIndex, svgMap, 'image'),
         //Here we use a loop to create an array of pip node wrappers.
         //This is just easier to work with than putting them all in the
         //flat hash, but it is totally acceptable to put them in the flat
@@ -68,8 +71,19 @@ function svgMapper (manifest, cardIndex, svgMap, options) {
     var map = options.nodeMapper(cardIndex, svgMap, options);
     //Set the values from the manifest file.
     var rankText = manifest.rank;
-    if (rankText == 1){
-        rankText = "A";
+    switch (rankText) {
+        case 1:
+            rankText = "A";
+            break;
+        case 11:
+            rankText = "J";
+            break;
+        case 12:
+            rankText = "Q";
+            break;
+        case 13:
+            rankText = "K";
+            break;
     }
     map.RankUp.val(rankText);
     map.RankDown.val(rankText);
@@ -81,13 +95,24 @@ function svgMapper (manifest, cardIndex, svgMap, options) {
     for (var i = 0; i < 17; i++) {
         var on = false;
         //if it's in our map above for this rank, turn it on, if not, turn it off.
-        if (pipMap[manifest.rank].indexOf(i+1) >= 0){
+        if (pipMap[manifest.rank || 0].indexOf(i+1) >= 0){
             on = true;
         }
         var rmap = map.Pips[i];
         rmap.setDisplay(on)
+
+        //Make the middle pip larger when it is an Ace.
+        if (i == 8) {
+            if (manifest.rank == 1){
+                rmap._raw.node.$.transform = "matrix(5.859375,0,0,5.859375,72.354821,-1252.6615)";
+            }
+            else {
+                rmap._raw.node.$.transform = "matrix(1.953125,0,0,1.953125,53.751607,-241.87051)";
+            }
+        }
         rmap.val(manifest.suit);
     }
+    map.Face.setDisplay(manifest.rank > 10);
 }
 
 //Boilderplate set up

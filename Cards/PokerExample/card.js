@@ -7,7 +7,6 @@ var srcPath = '../../src/';
 var CardBase = require(srcPath + 'CardBase').CardBase;
 var cbu = require(srcPath + 'cardBuilderUtilities').cardBuilderUtilities;
 var NW = require(srcPath + 'nodeWrapper').NodeWrapper;
-const math = require('mathjs');
 
 var pipMap = [
     [], //blank

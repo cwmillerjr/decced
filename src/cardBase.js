@@ -2,7 +2,8 @@ module.exports = {
     CardBase: CardBase
 }
 
-var x2j = require('xml2js');
+var Promise = require('bluebird');
+var x2j = Promise.promisifyAll(require('xml2js'));
 var fs = require('fs');
 var _ = require('lodash');
 var cbu = require('./cardBuilderUtilities').cardBuilderUtilities;
@@ -48,14 +49,14 @@ function CardBase(options) {
         return mappedObjects;
     }
 
-    this.Generate = function (generationData, svgTemplate, manifest) {
+    this.Generate = async function (generationData, svgTemplate, manifest) {
 
         generationData = generationData || { totalSheetCount: -1, files: [] };
         var renderPath = generationData.renderPath || _self.options.renderPath;
         //normalize path
         renderPath = cbu.mergePath(renderPath);
         if (!fs.existsSync(renderPath)){
-            fs.mkdirSync(renderPath);
+            await fs.mkdirAsync(renderPath);
         }
 
 
@@ -95,19 +96,28 @@ function CardBase(options) {
         //parse the manifest into manifest objects
         manifest = _self.ManifestLoader(manifest, format);
 
-        x2j.parseString(alignTemplate, function (e, alignDom) {
-            //parse the svg into xml for preprocessing
-            x2j.parseString(svgTemplate, function (e, svgDom) {
-                removeAbsoluteReferences(svgDom);
-                var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
-                generateCardSheets(e, svgDom, data, alignDom);
-                totalSheetCount = data.totalSheetCount;
-            });
-        });
+        var alignDom = await x2j.parseStringAsync(alignTemplate);
+        var svgDom = await x2j.parseStringAsync(svgTemplate);
+
+        removeAbsoluteReferences(svgDom);
+        var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
+        await generateCardSheets(svgDom, data, alignDom);
+        totalSheetCount = data.totalSheetCount;
+
+
+        // x2j.parseString(alignTemplate, function (e, alignDom) {
+        //     //parse the svg into xml for preprocessing
+        //     x2j.parseString(svgTemplate, function (e, svgDom) {
+        //         removeAbsoluteReferences(svgDom);
+        //         var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
+        //         generateCardSheets(e, svgDom, data, alignDom);
+        //         totalSheetCount = data.totalSheetCount;
+        //     });
+        // });
         generationData.totalSheetCount = totalSheetCount;
     }
 
-    function generateCardSheets (e, svgDom, data, alignDom)
+    async function generateCardSheets (svgDom, data, alignDom)
     {
         var manifest = data.manifest;
         var totalSheetCount = data.totalSheetCount;

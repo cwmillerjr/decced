@@ -76,20 +76,20 @@ function CardBase(options) {
         }
         //if it's a string, assume it's a path to an svg and load it
         if (typeof svgTemplate === 'string') {
-            svgTemplate = fs.readFileSync(svgTemplate);
+            svgTemplate = await fs.readFileAsync(svgTemplate);
         }
 
-        var alignTemplate = fs.readFileSync("./Alignment._svg");
+        var alignTemplate = await fs.readFileAsync("./Alignment._svg");
 
         //divine the manifest to use
         var format = 'tab';
         if (!manifest) {
             if (_.endsWith(_self.options.manifestPath, 'xlsx')) {
-                manifest = fs.readFileSync(_self.options.manifestPath);
+                manifest = await fs.readFileAsync(_self.options.manifestPath);
                 format = 'xlsx';
             }
             else {
-                manifest = fs.readFileSync(_self.options.manifestPath, { encoding: 'utf8' });
+                manifest = await fs.readFileAsync(_self.options.manifestPath, { encoding: 'utf8' });
             }
         }
 

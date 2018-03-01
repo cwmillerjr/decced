@@ -131,6 +131,14 @@ Universal options can be set in the config.json in the root directory.  (More ab
 ### Available Options
 Options are what make DeCCed easy to prototype with becasue I can easily change what I'm rendering and different levels of detail, etc.
 
+#### assetPath
+Type: `string`
+
+Path to card asset folder used to probe for assets denoted by name in the manifest file.
+
+Default: `cardsPath/cardName/Assets`
+
+
 #### backs
 Type: `boolean`
 
@@ -170,6 +178,20 @@ Name of the card to pull the card backing from.  This allows you to reuse anothe
 
 Default: current card path
 
+#### cardPath
+Type: `string`
+
+Path to card folder.
+
+Default: `cardsPath/cardName`
+
+#### columnNames
+Type: `string[]`
+
+Name of columns in the manifest file.
+
+Default: the fields in the top row of a manifest file if the first item is prefixed with a dollar sign ($).
+
 #### cropMarks
 Type: `boolean` or `string[]`
 
@@ -179,12 +201,54 @@ Render Crop Marks on the image.  If the value is simply true, the default is use
 
 Default: `["back"]`
 
+#### defaultManifest
+Type: `string[]`
+
+Default manifest values for an empty card.
+
+Default: the fields of a manifest file if the first item is prefixed with a circumflex (^) and it is the first row, or second if the first is column names.
+
+#### manifestPath
+Type: `string`
+
+Path to the manifest file.
+
+Default: `rootpath/Manifests/cardNameManifest.xlsx`
+
+#### minManifestColumns
+Type: `number`
+
+Minimum number of columns in a manifest row for it to be processed.  Allows for incomplete data to be filtered out.
+
+Default: `0`
+
+#### renderPath
+Type: `string`
+
+Path in which to render cards.
+
+Default: 'rootpath/Renders/'
+
+#### skip
+Type: `number`
+
+Number of manifest items to skip when rendering.  `0` will render all cards.
+
+Default: `0`
+
 #### skipMainPdf
 Type: `bool`
 
 If true, do not render cards.pdf.  Use in conjunction with breakoutPdfs.
 
 Default: `false`
+
+#### take
+Type: `number`
+
+Number of manifest items to render.
+
+Default: `undefined`
 
 ## config.json
 Looking in the root directory, you'll see a file named config.json.  This contains the configuration for the application, mainly universal options as well as build definitions.  It's basic format is below.

@@ -243,11 +243,10 @@ function CardBase(options) {
         var skip = options.skip || 0;
 
         var startAt = skip + 1;
-        var stopAt = take;
+        var stopAt = take; //false case
         if (take) {
-            stopAt = startAt + take
+            stopAt = startAt + take;
         }
-
 
         for (var i = 0; i < manifest.length; i++){
             var item = manifest[i];
@@ -343,7 +342,6 @@ function CardBase(options) {
             keepStandardAlignmentHoles = true;
         }
         if (options.cropMarks && (options.cropMarks === cropMarkKey || _.isArray(options.cropMarks) || _.includes(options.cropMarks, cropMarkKey))) {
-        //if (! new RegExp(',' + cropMarkKey + ',','i').test(`,${options.cropMarks},`)){
             traverse(dom).forEach(function (node) {
                 if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
                     _.forEach(this.parent.node.g, function(alignmentNode){

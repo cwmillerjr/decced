@@ -17,7 +17,6 @@ async function main() {
     cliArguments
         .version('0.1.0')
         .option('-c, --config [default]', 'Use the named configuration. [default]')
-        //.option('-l, --list', 'List of cards to create.')
         .parse(process.argv);
 
     var defaultConfigJson = {};
@@ -32,110 +31,117 @@ async function main() {
     if (!genData) {
         throw `build ${configToUse} is not defined.`;
     }
-    var buildOptions = _.assign(defaultConfigJson, configs.options || {}, genData.options || {});
+    
+    genData.buildOptions = _.assign(defaultConfigJson, configs.options || {}, genData.options || {});
+    genData.rootDir = genData.rootDir || rootDir;
 
-    var lib = await loadLibrary(rootDir,  buildOptions);
+    var lib = await loadLibrary(genData);
+    genData.library = lib;
 
-    var renderPath = cbu.mergePath(genData.renderPath || '../Renders/');
+    genData.renderPath = cbu.mergePath(genData.renderPath || '../Renders/');
     genData.outputFile = genData.outputFile || 'cards.pdf';
     _.assign(genData, { "totalSheetCount": 0, "files": [] });
 
-    if (typeof(genData.tasks['render']) == 'undefined' || genData.tasks['render']) {
-        console.info('Render');
-        for (var card of genData.cards)
-         {
-            console.info(' <- ' + card);
-            if (!lib[card]) {
-                throw card + ' is not defined in the card library.';
-            }
-            await lib[card].Generate(genData).catch(e=>console.exception(e));
-            console.info(' -> ' + card);
-        }
-        console.info('Rendered');
-    }
+    await renderCards(genData);
+    // if (typeof(genData.tasks['render']) == 'undefined' || genData.tasks['render']) {
+    //     console.info('Render');
+    //     for (var card of genData.cards)
+    //      {
+    //         console.info(' <- ' + card);
+    //         if (!lib[card]) {
+    //             throw card + ' is not defined in the card library.';
+    //         }
+    //         await lib[card].Generate(genData).catch(e=>console.exception(e));
+    //         console.info(' -> ' + card);
+    //     }
+    //     console.info('Rendered');
+    // }
 
-    if (typeof(genData.tasks['convert']) == 'undefined' || genData.tasks['convert']) {
-        console.info('Convert');
-        var inkscape = 'inkscape.exe';
-        if (_.isString(genData.tasks['convert'])) {
-            inkscape = cbu.mergePath(genData.tasks['convert'], inkscape);
-        }
-        else {
-            var exists = fs.existsSync(inkscape);
-            if (!exists) {
-                var found = await probeForFile(["/program files/inkscape", "/program files (x86)/inkscape"], ["inkscape.exe"]);
-                inkscape = found || inkscape;
-            }
-        }
-        
-        var queue = genData.files.map(file => () => convertFile(inkscape, file, renderPath));
-        await Throttle.all(queue, {maxInProgress:2});
-        console.info('Converted');
-    }
+    await convertCards(genData);
+    // if (typeof(genData.tasks['convert']) == 'undefined' || genData.tasks['convert']) {
+    //     console.info('Convert');
+    //     var inkscape = 'inkscape.exe';
+    //     if (_.isString(genData.tasks['convert'])) {
+    //         inkscape = cbu.mergePath(genData.tasks['convert'], inkscape);
+    //     }
+    //     else {
+    //         var exists = fs.existsSync(inkscape);
+    //         if (!exists) {
+    //             var found = await probeForFile(["/program files/inkscape", "/program files (x86)/inkscape"], ["inkscape.exe"]);
+    //             inkscape = found || inkscape;
+    //         }
+    //     }
+    //     var queue = genData.files.map(file => () => convertFile(inkscape, file, renderPath));
+    //     await Throttle.all(queue, {maxInProgress:2});
+    //     console.info('Converted');
+    // }
 
-    if (typeof (genData.tasks['compile']) === 'undefined' || genData.tasks['compile']) {
-        var gs = 'gswin64c.exe';
-        if (_.isString(genData.tasks['compile'])) {
-            gs = cbu.mergePath(genData.tasks['compile'], gs);
-        }
-        else {
-            var exists = fs.existsSync(gs);
-            if (!exists) {
-                var found = await probeForFile(["/program files/gs", "/program files (x86)/gs"], ["gswin64c.exe", "gswin32c.exe", "gswinc.exe"]);
-                gs = found || gs;
-            }
-        }
-        console.info('Compile');
-        _.forEach(genData.files, function (file) {
-            console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
-        });
-        //TODO: Handle errors
-        var actualOutputFile = cbu.mergePath(renderPath, genData.outputFile);
-        if (!buildOptions.replaceOutput) {
-            actualOutputFile = cbu.nextFileName(renderPath, genData.outputFile);
-        }
-        if (!buildOptions.skipMainPdf) {
-            var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(genData.files, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: renderPath });
-        }
-        console.info(' -> ' + actualOutputFile);
-        console.info('Compiled');
-        if (buildOptions.breakoutPdfs) {
-            var byCard = _.groupBy(genData.files, function (file) { return file.cardName });
-            _.forEach(byCard, function (g, cardName) {
-                console.info('Compile');
-                _.forEach(g, function (file) {
-                    console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
-                });
-                actualOutputFile = cbu.mergePath(renderPath, cardName + '.pdf');
-                if (!buildOptions.replaceOutput) {
-                    actualOutputFile = cbu.nextFileName(renderPath, cardName + '.pdf');
-                }
-                var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(g, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: renderPath });
-                console.info(' -> ' + actualOutputFile);
-                console.info('Compiled');
-            });
-        }
-    }
+    await compileCards(genData);
+    // if (typeof (genData.tasks['compile']) === 'undefined' || genData.tasks['compile']) {
+    //     var gs = 'gswin64c.exe';
+    //     if (_.isString(genData.tasks['compile'])) {
+    //         gs = cbu.mergePath(genData.tasks['compile'], gs);
+    //     }
+    //     else {
+    //         var exists = fs.existsSync(gs);
+    //         if (!exists) {
+    //             var found = await probeForFile(["/program files/gs", "/program files (x86)/gs"], ["gswin64c.exe", "gswin32c.exe", "gswinc.exe"]);
+    //             gs = found || gs;
+    //         }
+    //     }
+    //     console.info('Compile');
+    //     _.forEach(genData.files, function (file) {
+    //         console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
+    //     });
+    //     //TODO: Handle errors
+    //     var actualOutputFile = cbu.mergePath(renderPath, genData.outputFile);
+    //     if (!buildOptions.replaceOutput) {
+    //         actualOutputFile = cbu.nextFileName(renderPath, genData.outputFile);
+    //     }
+    //     if (!buildOptions.skipMainPdf) {
+    //         var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(genData.files, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: renderPath });
+    //     }
+    //     console.info(' -> ' + actualOutputFile);
+    //     console.info('Compiled');
+    //     if (buildOptions.breakoutPdfs) {
+    //         var byCard = _.groupBy(genData.files, function (file) { return file.cardName });
+    //         _.forEach(byCard, function (g, cardName) {
+    //             console.info('Compile');
+    //             _.forEach(g, function (file) {
+    //                 console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
+    //             });
+    //             actualOutputFile = cbu.mergePath(renderPath, cardName + '.pdf');
+    //             if (!buildOptions.replaceOutput) {
+    //                 actualOutputFile = cbu.nextFileName(renderPath, cardName + '.pdf');
+    //             }
+    //             var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(g, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: renderPath });
+    //             console.info(' -> ' + actualOutputFile);
+    //             console.info('Compiled');
+    //         });
+    //     }
+    // }
 
-    var clean = genData.tasks['clean'];
-    if (clean === true || typeof (clean) === 'undefined') {
-        clean = genData.cleanup || ["ps", "svg"];
-    }
-    if (clean) {
-        var cleanup;
-        if (_.isArray(clean)) {
-            cleanup = clean;
-        }
-
-        console.info('Clean');
-        cbu.purgeFiles(renderPath, cleanup || [], function (file) {
-            console.info(' -> ' + file);
-        });
-        console.info('Cleaned');
-    }
+    await cleanupCards(genData);
+    // var clean = genData.tasks['clean'];
+    // if (clean === true || typeof (clean) === 'undefined') {
+    //     clean = genData.cleanup || ["ps", "svg"];
+    // }
+    // if (clean) {
+    //     var cleanup;
+    //     if (_.isArray(clean)) {
+    //         cleanup = clean;
+    //     }
+    //     console.info('Clean');
+    //     cbu.purgeFiles(renderPath, cleanup || [], function (file) {
+    //         console.info(' -> ' + file);
+    //     });
+    //     console.info('Cleaned');
+    // }
 }
 
-async function loadLibrary(rootDir, buildOptions){
+async function loadLibrary(genData) {
+    var rootDir = genData.rootDir;
+    var buildOptions = genData.buildOptions;
     var lib = {};
     var cardsDir = cbu.mergePath(rootDir, 'Cards');
     var cardsDirFolders = await fs.readdirAsync(cardsDir);
@@ -208,13 +214,116 @@ async function probeForFile(probes, exes) {
     return found;
 }
 
-async function convertFile(inkscape, file, renderPath){
+async function renderCards(genData){
+    var lib = genData.library;
+    if (typeof(genData.tasks['render']) == 'undefined' || genData.tasks['render']) {
+        console.info('Render');
+        for (var card of genData.cards)
+         {
+            console.info(' <- ' + card);
+            if (!lib[card]) {
+                throw card + ' is not defined in the card library.';
+            }
+            await lib[card].Generate(genData).catch(e=>console.exception(e));
+            console.info(' -> ' + card);
+        }
+        console.info('Rendered');
+    }
+}
+
+async function convertCards(genData) {
+    if (typeof(genData.tasks['convert']) == 'undefined' || genData.tasks['convert']) {
+        console.info('Convert');
+        var inkscape = 'inkscape.exe';
+        if (_.isString(genData.tasks['convert'])) {
+            inkscape = cbu.mergePath(genData.tasks['convert'], inkscape);
+        }
+        else {
+            var exists = fs.existsSync(inkscape);
+            if (!exists) {
+                var found = await probeForFile(["/program files/inkscape", "/program files (x86)/inkscape"], ["inkscape.exe"]);
+                inkscape = found || inkscape;
+            }
+        }
+        var queue = genData.files.map(file => () => convertFile(genData, inkscape, file));
+        await Throttle.all(queue, {maxInProgress:2});
+        console.info('Converted');
+    }
+}
+
+async function convertFile(genData, inkscape, file){
     console.info(' <- ' + file.fileName);
     //TODO: Handle errors
     //Just crashes if it's spawnAsync...?
-    var x = spawnSync(inkscape, ['-P=' + file.fileName.replace('.svg', '.ps'), '-d300', '-z', file.fileName], { cwd: renderPath });
+    var x = spawnSync(inkscape, ['-P=' + file.fileName.replace('.svg', '.ps'), '-d300', '-z', file.fileName], { cwd: genData.renderPath });
     console.info(' -> ' + file.fileName.replace('.svg', '.ps'));
     return x;
+}
+
+async function compileCards(genData) {
+    var buildOptions = genData.buildOptions;
+    if (typeof (genData.tasks['compile']) === 'undefined' || genData.tasks['compile']) {
+        var gs = 'gswin64c.exe';
+        if (_.isString(genData.tasks['compile'])) {
+            gs = cbu.mergePath(genData.tasks['compile'], gs);
+        }
+        else {
+            var exists = fs.existsSync(gs);
+            if (!exists) {
+                var found = await probeForFile(["/program files/gs", "/program files (x86)/gs"], ["gswin64c.exe", "gswin32c.exe", "gswinc.exe"]);
+                gs = found || gs;
+            }
+        }
+        console.info('Compile');
+        _.forEach(genData.files, function (file) {
+            console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
+        });
+        //TODO: Handle errors
+        var actualOutputFile = cbu.mergePath(genData.renderPath, genData.outputFile);
+        if (!buildOptions.replaceOutput) {
+            actualOutputFile = cbu.nextFileName(genData.renderPath, genData.outputFile);
+        }
+        if (!buildOptions.skipMainPdf) {
+            var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(genData.files, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: genData.renderPath });
+        }
+        console.info(' -> ' + actualOutputFile);
+        console.info('Compiled');
+        if (buildOptions.breakoutPdfs) {
+            var byCard = _.groupBy(genData.files, function (file) { return file.cardName });
+            _.forEach(byCard, function (g, cardName) {
+                console.info('Compile');
+                _.forEach(g, function (file) {
+                    console.info(' <- ' + file.fileName.replace('.svg', '.ps'));
+                });
+                actualOutputFile = cbu.mergePath(genData.renderPath, cardName + '.pdf');
+                if (!buildOptions.replaceOutput) {
+                    actualOutputFile = cbu.nextFileName(genData.renderPath, cardName + '.pdf');
+                }
+                var y = spawnSync(gs, ['-r300x300', '-sDEVICE=pdfwrite', '-o', actualOutputFile].concat(_.map(g, function (file) { return file.fileName.replace('.svg', '.ps'); })), { cwd: genData.renderPath });
+                console.info(' -> ' + actualOutputFile);
+                console.info('Compiled');
+            });
+        }
+    }
+}
+
+async function cleanupCards(genData) {
+    var clean = genData.tasks['clean'];
+    if (clean === true || typeof (clean) === 'undefined') {
+        clean = genData.cleanup || ["ps", "svg"];
+    }
+    if (clean) {
+        var cleanup;
+        if (_.isArray(clean)) {
+            cleanup = clean;
+        }
+
+        console.info('Clean');
+        cbu.purgeFiles(genData.renderPath, cleanup || [], function (file) {
+            console.info(' -> ' + file);
+        });
+        console.info('Cleaned');
+    }
 }
 
 main().then(r => process.exit());

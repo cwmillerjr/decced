@@ -133,7 +133,7 @@ async function renderCards(genData){
             if (!lib[card]) {
                 throw card + ' is not defined in the card library.';
             }
-            await lib[card].Generate(genData).catch(e=>console.exception(e));
+            await lib[card].Generate(genData).catch(e=>console.log(e));
             console.info(' -> ' + card);
         }
         console.info('Rendered');

@@ -4,7 +4,7 @@ module.exports = {
 
 var Promise = require('bluebird');
 var x2j = Promise.promisifyAll(require('xml2js'));
-var fs = require('fs');
+var fs = Promise.promisifyAll(require('fs-extra'));
 var _ = require('lodash');
 var cbu = require('./cardBuilderUtilities').cardBuilderUtilities;
 var traverse = require('traverse');
@@ -104,16 +104,6 @@ function CardBase(options) {
         await generateCardSheets(svgDom, data, alignDom);
         totalSheetCount = data.totalSheetCount;
 
-
-        // x2j.parseString(alignTemplate, function (e, alignDom) {
-        //     //parse the svg into xml for preprocessing
-        //     x2j.parseString(svgTemplate, function (e, svgDom) {
-        //         removeAbsoluteReferences(svgDom);
-        //         var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
-        //         generateCardSheets(e, svgDom, data, alignDom);
-        //         totalSheetCount = data.totalSheetCount;
-        //     });
-        // });
         generationData.totalSheetCount = totalSheetCount;
     }
 
@@ -225,21 +215,21 @@ function CardBase(options) {
         //load the card back svg file to render after each card sheet for printing 2 sided
         var backs = null; 
         if (options.backs) {
-            var svgDom2 = loadBacks(options);
+            var svgDom2 = await loadBacks(options);
             setCropMarks (svgDom2, 'back', options);
             backs =  xmlBuilder.buildObject(svgDom2);
         }
 
         var blackout = null;
         if (options.blackout){
-            var svgDom2 = loadBlackout(options);
+            var svgDom2 = await loadBlackout(options);
             setCropMarks (svgDom2, 'blackout', options, false);
             blackout =  xmlBuilder.buildObject(svgDom2);
         }
 
         var blank = null;
         if (options.blackout && options.backs){
-            var svgDom2 = loadBlank(options);
+            var svgDom2 = await loadBlank(options);
             setCropMarks (svgDom2, 'blank', options, false);
             blank =  xmlBuilder.buildObject(svgDom2);
         }
@@ -259,13 +249,11 @@ function CardBase(options) {
         }
 
 
-
-
-        manifest.forEach(function (manifest) {
-        
-                //map the cards on the page
-                options.svgMapper.call(_self, manifest, cardIndex, svgMap, options);
-                cardIndex++;
+        for (var i = 0; i < manifest.length; i++){
+            var item = manifest[i];
+            //map the cards on the page
+            options.svgMapper.call(_self, item, cardIndex, svgMap, options);
+            cardIndex++;
                 //render a page once you've rendered the number of cards on the page (currently only 8 is available)
                 if (cardIndex > 8) {
                     var svgDocument = xmlBuilder.buildObject(svgDom);
@@ -276,13 +264,12 @@ function CardBase(options) {
 
                     docs[0] = svgDocument;
                     if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)){
-                        saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
+                        await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
                     }
                     cardSheet++;
                     cardIndex = 1;
             }
-            
-        });
+        }
         if (options.blankCards){
             var r = /^([0-9]+)(s|c)?$/;
             var m = options.blankCards.match(r);
@@ -311,7 +298,7 @@ function CardBase(options) {
 
                     docs[0] = svgDocument;
                     if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)){
-                        saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
+                        await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
                     }
 
                     cardSheet++;
@@ -341,7 +328,7 @@ function CardBase(options) {
 
             docs[0] = svgDocument;
             if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)) {
-                saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
+                await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
             }
             
 
@@ -367,7 +354,7 @@ function CardBase(options) {
         }
     }
 
-    function saveSheet(count, cardSheet, renderPath, generationData, cardSheetOrdinal, svgDocument) {
+    async function saveSheet(count, cardSheet, renderPath, generationData, cardSheetOrdinal, svgDocument) {
         var prefix = '0000' + count.toString();
         prefix = prefix.substr(prefix.length - 4);
         var fileName = prefix + '.' + cardSheetOrdinal + '_' + _self.options.cardName + '_Sheet' + cardSheet + '.svg';
@@ -377,10 +364,10 @@ function CardBase(options) {
             fileName: fileName,
             cardName: _self.options.cardName
         });
-        fs.writeFileSync(sheetPath, svgDocument);
+        await fs.writeFileAsync(sheetPath, svgDocument);
     }
 
-    function saveSheets(count, cardSheet, renderPath, generationData, svgDocument1, svgDocument2, svgDocument3) {
+    async function saveSheets(count, cardSheet, renderPath, generationData, svgDocument1, svgDocument2, svgDocument3) {
         var docs;
         if (_.isArray(svgDocument1)){
             docs = svgDocument1;
@@ -392,7 +379,7 @@ function CardBase(options) {
         var c = 0;
         for (var i = 0 ;i < docs.length;i++) {
             if (docs[i]){
-                saveSheet(count, cardSheet, renderPath, generationData, c++, docs[i]);
+                await saveSheet(count, cardSheet, renderPath, generationData, c++, docs[i]);
             }
         }
     }
@@ -501,14 +488,6 @@ function CardBase(options) {
                 var nodeMap = map[options.columnNames[i]];
                 if (nodeMap._raw.type === 'image'){
                     var val = manifest[options.columnNames[i]];
-                    // if (!val) {
-                    //     val = '';
-                    // } else if (val.indexOf('/') < 0) {
-                    //     if (val.indexOf('.' < 0)){
-                    //         val = val + '.png';
-                    //     }
-                    //     val = cbu.probePaths(val, options.assetPath, options.cardPath, cbu.mergePath(options.rootPath, 'Assets'));
-                    // }
                     val = _self.probeImage(val, options);
                     nodeMap.val(val);
                     nodeMap.setDisplay(!!manifest[options.columnNames[i]]);
@@ -520,11 +499,11 @@ function CardBase(options) {
         }
     }
 
-    function loadBacks (options) {
-        return loadSvg(options, 'cardBack', 'CardBack.svg');
+    async function loadBacks (options) {
+        return await loadSvg(options, 'cardBack', 'CardBack.svg');
     }
 
-    function loadSvg (options, prop, name) {
+    async function loadSvg (options, prop, name) {
         var candidatePath = options[prop];
         if (!/.svg$/.test(candidatePath)){
             candidatePath = cbu.mergePath(candidatePath, name);
@@ -544,11 +523,9 @@ function CardBase(options) {
                 }
             }
         }
-        var bytes = fs.readFileSync(cbu.mergePath(candidatePath));
+        var bytes = await fs.readFileAsync(cbu.mergePath(candidatePath));
         var dom = null;
-        x2j.parseString(bytes, function (e, svgDom) {
-            dom = svgDom;
-        });
+        dom = await x2j.parseStringAsync(bytes);
 
         removeAbsoluteReferences(dom);
 
@@ -569,11 +546,11 @@ function CardBase(options) {
         }); 
     }
 
-    function loadBlackout (options) {
-        return loadSvg(options, 'cardBlackout', 'CardBlackout.svg');
+    async function loadBlackout (options) {
+        return await loadSvg(options, 'cardBlackout', 'CardBlackout.svg');
     }
 
-    function loadBlank (options) {
-        return loadSvg(options, 'cardBlank', 'CardBlank.svg');
+    async function loadBlank (options) {
+        return await loadSvg(options, 'cardBlank', 'CardBlank.svg');
     }
 }

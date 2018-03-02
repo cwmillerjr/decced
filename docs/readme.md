@@ -215,6 +215,13 @@ Path to the manifest file.
 
 Default: `rootpath/Manifests/cardNameManifest.xlsx`
 
+#### maxInProgress
+Type: `number`
+
+Maximum number of Inkscape instances to spawn at once.
+
+Default: `0` (unlimited)
+
 #### minManifestColumns
 Type: `number`
 

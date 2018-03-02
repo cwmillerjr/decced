@@ -7,7 +7,8 @@ const cbu = require('./cardBuilderUtilities').cardBuilderUtilities;
 const fs = Promise.promisifyAll(require('fs-extra'));
 const cliArguments = require('commander');
 const Throttle = require('promise-parallel-throttle');
-
+const execAsync = require('async-child-process').execAsync;
+const exec = require('child_process').exec;
 
 async function main() {
 
@@ -154,19 +155,30 @@ async function convertCards(genData) {
                 inkscape = found || inkscape;
             }
         }
-        var queue = genData.files.map(file => () => convertFile(genData, inkscape, file));
-        await Throttle.all(queue, {maxInProgress:2});
+        
+        if (genData.buildOptions.maxInProgress <= 0){
+            await Promise.all(genData.files.map(file => convertFileAsync(genData, inkscape, file)));
+        }
+        else {
+            var queue = genData.files.map(file => () => convertFileAsync(genData, inkscape, file));
+            await Throttle.all(queue, {maxInProgress:genData.buildOptions.maxInProgress});
+        }
         console.info('Converted');
     }
 }
 
-async function convertFile(genData, inkscape, file){
+function convertFileAsync(genData, inkscape, file){
     console.info(' <- ' + file.fileName);
-    //TODO: Handle errors
-    //Just crashes if it's spawnAsync...?
-    var x = spawnSync(inkscape, ['-P=' + file.fileName.replace('.svg', '.ps'), '-d300', '-z', file.fileName], { cwd: genData.renderPath });
-    console.info(' -> ' + file.fileName.replace('.svg', '.ps'));
-    return x;
+    return new Promise((r,e)=>
+    {
+        var psFileName = file.fileName.replace('.svg', '.ps');
+        execAsync(`"${inkscape}" -P=${psFileName} -d300 -z ${file.fileName}`, {cwd: genData.renderPath})
+        .then(rr=> {
+            console.info(' -> ' + psFileName);
+            r(rr);
+        })
+        .catch(ee=>e(ee));
+    });
 }
 
 async function compileCards(genData) {

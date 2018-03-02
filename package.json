@@ -1,7 +1,13 @@
 {
   "name": "decced",
   "version": "0.2.0",
-  "description": "",
+  "description": "Templated playing card generator",
+  "homepage": "https://cwmillerjr.github.io/decced/",
+  "repository":   
+  {
+    "type" : "git",
+    "url" : "https://github.com/cwmillerjr/decced.git"
+  },
   "main": "./src/cardBuilder.js",
   "dependencies": {
     "xml2js": "^0.4.19",
@@ -11,7 +17,8 @@
     "commander": "^2.11.0",
     "fs-extra": "^5.0.0",
     "bluebird": "^3.5.1",
-    "promise-parallel-throttle": "^3.1.0"
+    "promise-parallel-throttle": "^3.1.0",
+    "async-child-process": "^1.1.1"
   },
   "devDependencies": {},
   "scripts": {

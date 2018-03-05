@@ -66,12 +66,21 @@ function CardBuilderUtilities() {
         var existingFiles = _.filter(files, function (file) {
             //wtf... returns false if the semicolon is there and true if it isn't, but still won't work either way for the filter...
             //regex.test(file);
-            var t = file.substr(-4,4).toLocaleLowerCase();
-            return file != file.replace(cardName,'') && t != '.pdf';
+            var t = _self.getExtension(file).toLocaleLowerCase();
+            //var t = file.substr(-4,4).toLocaleLowerCase();
+            return file != file.replace(cardName,'') && t != 'pdf';
         });
 
         existingFiles.forEach(function (file) {
-            fs.unlinkSync(_self.mergePath(renderPath, file));
+            try {
+                fs.unlinkSync(_self.mergePath(renderPath, file));
+            }
+            catch (e) {
+                if (!e.messageShown) {
+                    console.warning(`There was an error cleaning up file ${file}. \n${e.message}`);
+                    e.messageShown = true;
+                }
+            }
         });
     }
 
@@ -238,6 +247,18 @@ function CardBuilderUtilities() {
             }
         });
         return _.join(fragments, '/');
+    }
+
+    this.getExtension = function (path) {
+        var result = undefined;
+        if (typeof(path) == 'string') {
+            result = '';
+            var i = path.lastIndexOf('.');
+            if (i > -1 && i + 1 < path.length) {
+                result = path.substr(i+1);
+            }
+        }
+        return result;
     }
 
     /**

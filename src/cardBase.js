@@ -31,28 +31,36 @@ function CardBase(options) {
     }
 
     this.ManifestLoader = function (manifest, format) {
-        var parsedRows = cbu.parseManifest(manifest, format, _self.options.minManifestColumns);
-        if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '$'){
-            _self.options.columnNames = parsedRows[0];
-            _self.options.columnNames[0] = _self.options.columnNames[0].substr(1);
-            parsedRows.splice(0,1);
+        try {
+            var parsedRows = cbu.parseManifest(manifest, format, _self.options.minManifestColumns);
+            if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '$'){
+                _self.options.columnNames = parsedRows[0];
+                _self.options.columnNames[0] = _self.options.columnNames[0].substr(1);
+                parsedRows.splice(0,1);
+            }
+            if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '^'){
+                _self.options.defaultManifest = parsedRows[0];
+                _self.options.defaultManifest[0] = _self.options.defaultManifest[0].substr(1);
+                parsedRows.splice(0,1);
+            }
+            var mappedObjects = _.map(parsedRows, function (parsedRow) {
+                var mappedObject = _self.options.manifestMapper.call(_self, parsedRow, _self.options);
+                return mappedObject;
+            });
+            return mappedObjects;
         }
-        if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '^'){
-            _self.options.defaultManifest = parsedRows[0];
-            _self.options.defaultManifest[0] = _self.options.defaultManifest[0].substr(1);
-            parsedRows.splice(0,1);
+        catch (e) {
+            console.error(`Could not parse manifest file.`);
+            e.messageShown = true;
+            console.error(e.message);
+            throw e;
         }
-        var mappedObjects = _.map(parsedRows, function (parsedRow) {
-            var mappedObject = _self.options.manifestMapper.call(_self, parsedRow, _self.options);
-            return mappedObject;
-        });
-        return mappedObjects;
     }
 
     this.Generate = async function (generationData, svgTemplate, manifest) {
-
         generationData = generationData || { totalSheetCount: -1, files: [] };
         var renderPath = generationData.renderPath || _self.options.renderPath;
+
         //normalize path
         renderPath = cbu.mergePath(renderPath);
         if (!fs.existsSync(renderPath)){

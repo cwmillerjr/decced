@@ -1,7 +1,11 @@
 {
-    "cardBack" : "DefaultExample",
+    "cardBack" : "CardFace.svg",
     "cardPositions" : {
         "x": [0, 63.5, 127, 190.5],
         "y":[-200, -111.125]
+    },
+    "generateBack" :true,
+    "translateBackOffset" : {
+        "x" : -63.5
     }
 }

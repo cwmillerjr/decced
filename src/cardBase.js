@@ -115,18 +115,7 @@ function CardBase(options) {
         generationData.totalSheetCount = totalSheetCount;
     }
 
-    async function generateCardSheets (svgDom, data, alignDom)
-    {
-        var manifest = data.manifest;
-        var totalSheetCount = data.totalSheetCount;
-        var _self = data.self;
-        var hasCards = false;
-        var cardTemplateNode;
-        var cardTemplateNodeParent;
-        var options = _self.options;
-        var renderPath =  data.renderPath;
-        var generationData = data.generationData;
-
+    function injectAlignmentDomFragment(svgDom, alignDom){
         if (svgDom.svg.g){
             var found = false;
             for (var i = 0; i < svgDom.svg.g.length; i++){
@@ -139,6 +128,21 @@ function CardBase(options) {
                 svgDom.svg.g.push(alignDom.g);
             }
         }
+    }
+
+    async function generateCardSheets (svgDom, data, alignDom)
+    {
+        var manifest = data.manifest;
+        var totalSheetCount = data.totalSheetCount;
+        var _self = data.self;
+        var hasCards = false;
+        var cardTemplateNode;
+        var cardTemplateNodeParent;
+        var options = _self.options;
+        var renderPath =  data.renderPath;
+        var generationData = data.generationData;
+
+        injectAlignmentDomFragment(svgDom, alignDom);
 
         setCropMarks (svgDom, 'front', options);
 
@@ -223,23 +227,26 @@ function CardBase(options) {
         //load the card back svg file to render after each card sheet for printing 2 sided
         var backs = null; 
         if (options.backs) {
-            var svgDom2 = await loadBacks(options);
+            var svgDom2 = await loadBacks(options, alignDom);
+            injectAlignmentDomFragment(svgDom2, alignDom)
             setCropMarks (svgDom2, 'back', options);
-            backs =  xmlBuilder.buildObject(svgDom2);
+            backs = xmlBuilder.buildObject(svgDom2);
         }
 
         var blackout = null;
         if (options.blackout){
             var svgDom2 = await loadBlackout(options);
+            injectAlignmentDomFragment(svgDom2, alignDom)
             setCropMarks (svgDom2, 'blackout', options, false);
-            blackout =  xmlBuilder.buildObject(svgDom2);
+            blackout = xmlBuilder.buildObject(svgDom2);
         }
 
         var blank = null;
         if (options.blackout && options.backs){
             var svgDom2 = await loadBlank(options);
+            injectAlignmentDomFragment(svgDom2, alignDom)
             setCropMarks (svgDom2, 'blank', options, false);
-            blank =  xmlBuilder.buildObject(svgDom2);
+            blank = xmlBuilder.buildObject(svgDom2);
         }
 
         var docs = [null, blackout, backs, blank];
@@ -345,19 +352,47 @@ function CardBase(options) {
         data.totalSheetCount = totalSheetCount;
     }
 
-    function setCropMarks (dom, cropMarkKey, options, keepStandardAlignmentHoles) {
-        if (typeof(keepStandardAlignmentHoles) === 'undefined'){
-            keepStandardAlignmentHoles = true;
+    function setCropMarks (dom, cropMarkKey, options, showStandardAlignmentHoles) {
+        
+        if (typeof(showStandardAlignmentHoles) === 'undefined'){
+            showStandardAlignmentHoles = true;
         }
-        if (options.cropMarks && (options.cropMarks === cropMarkKey || _.isArray(options.cropMarks) || _.includes(options.cropMarks, cropMarkKey))) {
-            traverse(dom).forEach(function (node) {
-                if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
-                    _.forEach(this.parent.node.g, function(alignmentNode){
-                        cbu.setDisplay(alignmentNode.$, alignmentNode.$.id == 'StandardAlignmentHoles' && keepStandardAlignmentHoles);
-                    });
-                }
-            });
+
+        var showTicks = false;
+
+        if (options.cropMarks && (options.cropMarks === cropMarkKey || (_.isArray(options.cropMarks) && _.includes(options.cropMarks, cropMarkKey)))) {
+            showTicks = true;
         }
+        
+        traverse(dom).forEach(function (node) {
+            if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
+                _.forEach(this.parent.node.g, function(alignmentNode) {
+                    var display = false;
+                    switch (alignmentNode.$.id) {
+                        case 'Ticks' :
+                        case 'ExtendedTicks' :
+                            display = showTicks;
+                            break;
+                        case 'StandardAlignmentHoles' :
+                            display = showStandardAlignmentHoles;
+                            break;
+                        default :
+                            display = false;
+                    }
+                    cbu.setDisplay(alignmentNode.$, display);
+                });
+            }
+        });
+
+        // if (options.cropMarks && (options.cropMarks === cropMarkKey || _.isArray(options.cropMarks) || _.includes(options.cropMarks, cropMarkKey))) {
+        //     traverse(dom).forEach(function (node) {
+        //         if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
+        //             _.forEach(this.parent.node.g, function(alignmentNode){
+        //                 cbu.setDisplay(alignmentNode.$, alignmentNode.$.id == 'StandardAlignmentHoles' && keepStandardAlignmentHoles);
+        //             });
+        //         }
+        //     });
+        // }
     }
 
     async function saveSheet(count, cardSheet, renderPath, generationData, cardSheetOrdinal, svgDocument) {
@@ -506,7 +541,71 @@ function CardBase(options) {
     }
 
     async function loadBacks (options) {
-        return await loadSvg(options, 'cardBack', 'CardBack.svg');
+        try {
+            var backDom = await loadSvg(options, 'cardBack', 'CardBack.svg')
+            if (options.generateBack) {
+                //var backDom = traverse.clone(svgDom);
+                traverse(backDom).forEach(function (node) {
+                    if (node.$ && node.$.id) {
+                        if (node.$.id == 'Back') {
+                            cardTemplateNode = node;
+                            cardTemplateNodeParent = this.parent.node;
+                            //duplicate
+                            //root positions to place the cloned cards
+                            var cardPositions = 
+                            options.cardBackPositions || 
+                            {
+                                x: [
+                                    0,
+                                    63.5,
+                                    127,
+                                    190.5
+                                ],
+                                y:[
+                                    -108,
+                                    -196.85
+                                ]
+                            };
+
+                            //figure out if the svg needs positions to be offset
+                            var cardPositionTranslations = [];
+                            var xOff = 0;//-63.5;
+                            if (options.translateBackOffset && options.translateBackOffset.x) {
+                                xOff = options.translateBackOffset.x;
+                            }
+                            var yOff = 0;
+                            if (options.translateBackOffset && options.translateBackOffset.y) {
+                                yOff = options.translateBackOffset.y;   
+                            }
+
+                            //create card position (svg "translate" attributes) array using the root and any offsets
+                            for (var x=0;x<cardPositions.x.length; x++){
+                                for (var y=0;y<cardPositions.y.length; y++){
+                                    var xPos = cardPositions.x[x] + xOff;
+                                    var yPos = cardPositions.y[y] + yOff;
+                                    cardPositionTranslations.push(`translate(${xPos},${yPos})`);
+                                }
+                            }
+
+                            //clone the template for each position and insert it into the svg.
+                            cardPositionTranslations.forEach(function (translate, index) {
+                                var aCard = traverse(cardTemplateNode).clone();
+                                aCard.$.transform = translate;
+                                cardTemplateNodeParent.push(aCard);
+                            });
+                            return false;
+                        }
+                    }
+                });
+            }
+            return backDom;
+        }
+        catch (e) {
+            console.error(`Could not generate card back dom.`);
+            e.messageShown = true;
+            console.error(e.message);
+            throw e;
+        }
     }
 
     async function loadSvg (options, prop, name) {

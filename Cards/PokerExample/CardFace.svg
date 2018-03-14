@@ -28,13 +28,13 @@
      inkscape:window-height="771"
      id="namedview8619"
      showgrid="true"
-     inkscape:zoom="20.081833"
-     inkscape:cx="-18.83496"
-     inkscape:cy="-39.917325"
+     inkscape:zoom="1.775"
+     inkscape:cx="349.48987"
+     inkscape:cy="-220.87821"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
-     inkscape:current-layer="AssetLayer"
+     inkscape:current-layer="CardLayer"
      inkscape:document-units="in"
      inkscape:measure-start="6,-672"
      inkscape:measure-end="6,-570"
@@ -45,11 +45,15 @@
      inkscape:object-nodes="true"
      inkscape:snap-nodes="true"
      inkscape:snap-grids="true"
-     inkscape:snap-to-guides="false"
-     inkscape:object-paths="false"
+     inkscape:snap-to-guides="true"
+     inkscape:object-paths="true"
      inkscape:snap-bbox="true"
-     inkscape:bbox-nodes="false"
-     inkscape:snap-smooth-nodes="false">
+     inkscape:bbox-nodes="true"
+     inkscape:snap-smooth-nodes="false"
+     inkscape:bbox-paths="false"
+     inkscape:snap-intersection-paths="true"
+     inkscape:snap-bbox-edge-midpoints="false"
+     inkscape:snap-bbox-midpoints="false">
     <inkscape:grid
        type="xygrid"
        id="grid8621"
@@ -63,13 +67,185 @@
        id="guide5854"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="115.8875,-85.725002"
+       position="73.025,-85.725"
        orientation="0,1"
        id="guide5856"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="15.875,-85.725"
+       orientation="1,0"
+       id="guide1080"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="73.025,-85.725"
+       orientation="1,0"
+       id="guide1082"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="79.374998,-85.725002"
+       orientation="1,0"
+       id="guide1084"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="136.525,-85.725002"
+       orientation="1,0"
+       id="guide1086"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="76.199998,-3.1750002"
+       orientation="1,0"
+       id="guide2484"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="76.199996,0"
+       orientation="0,1"
+       id="guide2486"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="12.7,-3.1750002"
+       orientation="1,0"
+       id="guide2488"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="76.2,-88.9"
+       orientation="0,1"
+       id="guide2490"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="139.7,-88.900004"
+       orientation="1,0"
+       id="guide2492"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="142.875,-88.900002"
+       orientation="1,0"
+       id="guide2937"
        inkscape:locked="false" />
   </sodipodi:namedview>
   <defs
      id="defs5972">
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker3057"
+       style="overflow:visible;"
+       inkscape:isstock="true">
+      <path
+         id="path3055"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker2985"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mend"
+       inkscape:collect="always">
+      <path
+         transform="scale(0.4) rotate(180) translate(10,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path2983" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker2130"
+       style="overflow:visible;"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path2128"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker1600"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path1598"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.4) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker1536"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mend"
+       inkscape:collect="always">
+      <path
+         transform="scale(0.4) rotate(180) translate(10,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path1534" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker1484"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mstart"
+       inkscape:collect="always">
+      <path
+         transform="scale(0.4) translate(10,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path1482" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mend"
+       style="overflow:visible;"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path1135"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mstart"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path1132"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.4) translate(10,0)" />
+    </marker>
     <inkscape:path-effect
        effect="simplify"
        id="path-effect9301"
@@ -345,7 +521,7 @@
       <path
          id="path938"
          d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
          transform="scale(0.8) translate(12.5,0)" />
     </marker>
     <mask
@@ -980,6 +1156,21 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <rect
+     style="fill:#ff0000;fill-opacity:0.99555556;stroke:none;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect2498"
+     width="63.5"
+     height="88.900002"
+     x="146.05"
+     y="215.89999"
+     ry="0" />
+  <rect
+     style="fill:#00ff00;fill-opacity:0.99555556;stroke:none;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect2500"
+     width="57.150002"
+     height="82.550003"
+     x="149.22501"
+     y="219.075" />
   <g
      inkscape:groupmode="layer"
      id="CardLayer"
@@ -1512,12 +1703,70 @@
          id="flowRegion1919"
          style="text-align:start;text-anchor:start"><rect
            id="rect1921"
-           width="258"
-           height="144.00002"
+           width="246"
+           height="143.99998"
            x="-204"
            y="1074"
            style="text-align:start;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara1923">Here I've created a template for a card.  I've grouped it all under a group with id &quot;Card$&quot;.  This tells DeCCed that this is the object it should copy for each card.  Inside that group, I created two text areas called &quot;RankUp$&quot; and &quot;RankDown$&quot;.  These will be able to have their text replaced with values from a manifest file.  I also likewise added to glyphs called &quot;SuitUp$&quot; and &quot;SuitDown$&quot;.  I added an array of &quot;Pips&quot; I marked as &quot;Pip$1&quot; through &quot;Pip$17&quot;.  All of these are CLONES of the glyphs to the side.  This is important because it creates a link back to the original glyph so any changes to that one affect the pips on the card.  These pips I will turn on and off depending on the rank of the card.</flowPara></flowRoot>  </g>
+         id="flowPara1923">Here I've created a template for a card.  I've grouped it all under a group with id &quot;Card$&quot;.  This tells DeCCed that this is the object it should copy for each card.  Inside that group, I created two text areas called &quot;RankUp$&quot; and &quot;RankDown$&quot;.  These will be able to have their text replaced with values from a manifest file.  I also likewise added to glyphs called &quot;SuitUp$&quot; and &quot;SuitDown$&quot;.  I added an array of &quot;Pips&quot; I marked as &quot;Pip$1&quot; through &quot;Pip$17&quot;.  All of these are CLONES of the glyphs to the side.  This is important because it creates a link back to the original glyph so any changes to that one affect the pips on the card.  These pips I will turn on and off depending on the rank of the card.</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 136.525,219.07502 6.35,-1e-5"
+       id="path1120"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 136.525,301.62501 h 6.35"
+       id="path1122"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:url(#Arrow1Mend)"
+       d="m 139.7,219.075 v 82.55"
+       id="path1124"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 79.374999,301.62501 v 6.35"
+       id="path1470"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 136.525,301.62501 v 6.35"
+       id="path1472"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#marker1484);marker-end:url(#marker2130)"
+       d="M 79.374999,306.3875 H 136.525"
+       id="path1474"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 15.875,301.62501 v 6.35"
+       id="path1586"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 73.024999,301.62501 v 6.35"
+       id="path1588"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#marker1600);marker-end:url(#marker1536)"
+       d="M 15.875001,306.3875 H 73.025"
+       id="path1590"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2476"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:'Cooper Black';-inkscape-font-specification:'Cooper Black, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458334)"><flowRegion
+         id="flowRegion2478"
+         style="text-align:center;text-anchor:middle"><rect
+           id="rect2480"
+           width="188.30984"
+           height="80.253525"
+           x="201.69014"
+           y="1173.7465"
+           style="text-align:center;text-anchor:middle" /></flowRegion><flowPara
+         id="flowPara2482">Try to keep your cards within the areas between the guides designated by the arrows to avoid having any art on the crop lines.  You can go all the way to the crop line if you are using a black border, or are very good with a knife.</flowPara></flowRoot>  </g>
   <g
      inkscape:groupmode="layer"
      id="AssetLayer"
@@ -1752,4 +2001,40 @@
      width="38.262852"
      id="rect8894"
      style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <flowRoot
+     xml:space="preserve"
+     id="flowRoot2951"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:'Cooper Black';-inkscape-font-specification:'Cooper Black, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+     transform="matrix(0.26458334,0,0,0.26458334,39.304056,-13.169449)"><flowRegion
+       id="flowRegion2953"
+       style="text-align:center;text-anchor:middle"><rect
+         id="rect2955"
+         width="167.99998"
+         height="161.99998"
+         x="588"
+         y="900"
+         style="text-align:center;text-anchor:middle" /></flowRegion><flowPara
+       id="flowPara2957">Safe Zone</flowPara></flowRoot>  <flowRoot
+     transform="matrix(0.26458334,0,0,0.26458334,39.304056,-8.2870596)"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:'Cooper Black';-inkscape-font-specification:'Cooper Black, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+     id="flowRoot2973"
+     xml:space="preserve"><flowRegion
+       style="text-align:center;text-anchor:middle"
+       id="flowRegion2969"><rect
+         style="text-align:center;text-anchor:middle"
+         y="900"
+         x="588"
+         height="161.99998"
+         width="167.99998"
+         id="rect2967" /></flowRegion><flowPara
+       id="flowPara2971">Crop Zone</flowPara></flowRoot>  <path
+     style="fill:none;stroke:#000000;stroke-width:0.25400001;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#marker2985)"
+     d="m 211.1375,227.01251 c -12.7,0 -12.7,0 -12.7,0"
+     id="path2975"
+     inkscape:connector-curvature="0" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.26458335px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker3057)"
+     d="m 211.1375,231.77501 h -3.175"
+     id="path3047"
+     inkscape:connector-curvature="0" />
 </svg>

@@ -51,6 +51,12 @@ function CardBase(options) {
 
     this.Generate = async function (generationData, svgTemplate, manifest) {
 
+        var options = _self.options;
+        var cardFormatFileSuffix = options.format || "";
+        if (cardFormatFileSuffix){
+            cardFormatFileSuffix = '.' + cardFormatFileSuffix;
+        }
+
         generationData = generationData || { totalSheetCount: -1, files: [] };
         var renderPath = generationData.renderPath || _self.options.renderPath;
         //normalize path
@@ -79,7 +85,8 @@ function CardBase(options) {
             svgTemplate = await fs.readFileAsync(svgTemplate);
         }
 
-        var alignTemplate = await fs.readFileAsync("./Alignment._svg");
+        var alignTemplate = await fs.readFileAsync(`./Alignment${cardFormatFileSuffix}._svg`);
+        var clipPathsTemplate = await fs.readFileAsync(`./ClipPaths${cardFormatFileSuffix}._svg`)
 
         //divine the manifest to use
         var format = 'tab';
@@ -97,17 +104,19 @@ function CardBase(options) {
         manifest = _self.ManifestLoader(manifest, format);
 
         var alignDom = await x2j.parseStringAsync(alignTemplate);
+        var clipDom = await x2j.parseStringAsync(clipPathsTemplate);
         var svgDom = await x2j.parseStringAsync(svgTemplate);
+
 
         removeAbsoluteReferences(svgDom);
         var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
-        await generateCardSheets(svgDom, data, alignDom);
+        await generateCardSheets(svgDom, data, alignDom, clipDom);
         totalSheetCount = data.totalSheetCount;
 
         generationData.totalSheetCount = totalSheetCount;
     }
 
-    async function generateCardSheets (svgDom, data, alignDom)
+    async function generateCardSheets (svgDom, data, alignDom, clipDom)
     {
         var manifest = data.manifest;
         var totalSheetCount = data.totalSheetCount;
@@ -118,6 +127,7 @@ function CardBase(options) {
         var options = _self.options;
         var renderPath =  data.renderPath;
         var generationData = data.generationData;
+        var cardsPerSheet = options.cardsPerSheet || 8;
 
         if (svgDom.svg.g){
             var found = false;
@@ -132,6 +142,20 @@ function CardBase(options) {
             }
         }
 
+        if (svgDom.svg.defs) {
+            if (typeof(svgDom.svg.defs[0].clipPath) === 'undefined') {
+                svgDom.svg.defs[0].clipPath = [];
+            }
+            for (var def of clipDom.defs.clipPath) {
+                for (var existingDef of svgDom.svg.defs[0].clipPath){
+                    if (def.id == existingDef.id){
+                        continue;
+                    }
+                }
+                svgDom.svg.defs[0].clipPath.push(def);
+            }
+        }
+
         setCropMarks (svgDom, 'front', options);
 
         //find the card template element in the svg file
@@ -142,7 +166,7 @@ function CardBase(options) {
                     cardTemplateNodeParent = this.parent.node;
                 }
                 //check to see if there's a card body defined that has already been processed before getting here
-                else if (/^Card[0-8]$/.test(node.$.id)) {
+                else if (/^Card[0-9]+$/.test(node.$.id)) {
                     hasCards = true;
                     return false;
                 }
@@ -191,6 +215,7 @@ function CardBase(options) {
             cardPositionTranslations.forEach(function (translate, index) {
                 var aCard = traverse(cardTemplateNode).clone();
                 aCard.$.transform = translate;
+                aCard.$["clip-path"] = `url(#clipPathCard${index + 1})`
                 traverse(aCard).forEach(function (node) {
                     if (node.$ && node.$.id) {
                         node.$.id = node.$.id.replace('_T', index + 1).replace('$', index + 1);
@@ -253,8 +278,8 @@ function CardBase(options) {
             //map the cards on the page
             options.svgMapper.call(_self, item, cardIndex, svgMap, options);
             cardIndex++;
-                //render a page once you've rendered the number of cards on the page (currently only 8 is available)
-                if (cardIndex > 8) {
+                //render a page once you've rendered the number of cards on the page
+                if (cardIndex > cardsPerSheet) {
                     var svgDocument = xmlBuilder.buildObject(svgDom);
                     
                     if (totalSheetCount >= 0) {
@@ -274,9 +299,9 @@ function CardBase(options) {
             var m = options.blankCards.match(r);
             var x = 0;
             if (m[2] === 's'){
-                x = 8 * m[1];
-                if (cardIndex > 1 && cardIndex < 9){
-                    x += (9 - cardIndex);
+                x = cardsPerSheet * m[1];
+                if (cardIndex > 1 && cardIndex <= cardsPerSheet){
+                    x += ((cardsPerSheet + 1) - cardIndex);
                 }
             }
             else {
@@ -287,8 +312,8 @@ function CardBase(options) {
                 //map the cards on the page
                 options.svgMapper.call(_self, empty, cardIndex, svgMap, options);
                 cardIndex++;
-                //render a page once you've rendered the number of cards on the page (currently only 8 is available)
-                if (cardIndex > 8) {
+                //render a page once you've rendered the number of cards on the page
+                if (cardIndex > cardsPerSheet) {
                     var svgDocument = xmlBuilder.buildObject(svgDom);
                     
                     if (totalSheetCount >= 0) {
@@ -307,9 +332,9 @@ function CardBase(options) {
 
         }
         //if you have a partial sheet, pad out the remaining unfilled positions (otherwise they will render the previous page's cards) and save the partial sheet
-        if (cardIndex != 1 && cardIndex < 9) {
+        if (cardIndex != 1 && cardIndex <= cardsPerSheet) {
             var empty = options.manifestMapper.call(_self);
-            while (cardIndex < 9) {
+            while (cardIndex <= cardsPerSheet) {
                 //what's the difference?
                 if (svgMap['Card' + cardIndex]) {
                     //blank card

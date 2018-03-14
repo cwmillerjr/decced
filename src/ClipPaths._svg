@@ -1,0 +1,90 @@
+<defs>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard1">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect1"
+         width="63.5"
+         height="88.900002"
+         x="82.550003"
+         y="222.25" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard2">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect2"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.90001" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard3">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect3"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.89999" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard4">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect4"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.90001" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard5">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect5"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.89999" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard6">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect6"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.90001" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard7">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect7"
+         width="63.500011"
+         height="88.900002"
+         x="76.200005"
+         y="215.89999" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPathCard8">
+      <rect
+         style="fill:#2cffff;fill-opacity:1;stroke:#ff00ff;stroke-width:0.25400001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="clipRect8"
+         width="63.5"
+         height="88.900002"
+         x="76.200005"
+         y="215.90001" />
+    </clipPath>
+  </defs>

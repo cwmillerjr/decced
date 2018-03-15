@@ -142,7 +142,7 @@ function CardBase(options) {
             }
         }
 
-        if (svgDom.svg.defs) {
+        if (svgDom.svg.defs && options.clip) {
             if (typeof(svgDom.svg.defs[0].clipPath) === 'undefined') {
                 svgDom.svg.defs[0].clipPath = [];
             }
@@ -153,6 +153,12 @@ function CardBase(options) {
                     }
                 }
                 svgDom.svg.defs[0].clipPath.push(def);
+            }
+        }
+
+        if (options.svgAttributes) {
+            for (var attribute in options.svgAttributes) {
+                svgDom.svg.$[attribute] = options.svgAttributes[attribute];
             }
         }
 
@@ -211,17 +217,22 @@ function CardBase(options) {
                 }
             }
 
+            var cardsInSheet = 0;
             //clone the template for each position and insert it into the svg.
             cardPositionTranslations.forEach(function (translate, index) {
-                var aCard = traverse(cardTemplateNode).clone();
-                aCard.$.transform = translate;
-                aCard.$["clip-path"] = `url(#clipPathCard${index + 1})`
-                traverse(aCard).forEach(function (node) {
-                    if (node.$ && node.$.id) {
-                        node.$.id = node.$.id.replace('_T', index + 1).replace('$', index + 1);
+                if (cardsInSheet++ < cardsPerSheet) {
+                    var aCard = traverse(cardTemplateNode).clone();
+                    aCard.$.transform = translate;
+                    if (options.clip) {
+                        aCard.$["clip-path"] = `url(#clipPathCard${index + 1})`
                     }
-                });
-                cardTemplateNodeParent.push(aCard);
+                    traverse(aCard).forEach(function (node) {
+                        if (node.$ && node.$.id) {
+                            node.$.id = node.$.id.replace('_T', index + 1).replace('$', index + 1);
+                        }
+                    });
+                    cardTemplateNodeParent.push(aCard);
+                }
             });
         }
 

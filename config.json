@@ -1,5 +1,5 @@
 {
-    "build" : "default",
+    "build" : "tgc",
     "builds" :{
         "default": {
             "cards": [
@@ -17,6 +17,24 @@
                 "convert" : true,
                 "compile" : true,
                 "clean" : ["ps", "svg"]
+            }
+        },
+        "tgc": {
+            "cards": [
+                "DefaultExample"
+            ],
+            "renderPath": "../Renders",
+            "tasks": {
+                "render" : true,
+                "convert" : false,
+                "export" : true,
+                "compile" : false,
+                "clean" : ["svg"]
+            },
+            "options" : {
+                "cardsPerSheet" : 1,
+                "clip" : false,
+                "backs" : false
             }
         },
         "proofs": {

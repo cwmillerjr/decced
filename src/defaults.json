@@ -10,5 +10,6 @@
         },
     "cropMarks" : ["back"],
     "replaceOutput" : true,
-    "maxInProgress" : 0
+    "maxInProgress" : 0,
+    "clip" : true
 }

@@ -44,6 +44,7 @@ async function main() {
     _.assign(genData, { "totalSheetCount": 0, "files": [] });
 
     await renderCards(genData);
+    await exportCards(genData);
     await convertCards(genData);
     await compileCards(genData);
     await cleanupCards(genData);
@@ -175,6 +176,46 @@ function convertFileAsync(genData, inkscape, file){
         execAsync(`"${inkscape}" -P=${psFileName} -d300 -z ${file.fileName}`, {cwd: genData.renderPath})
         .then(rr=> {
             console.info(' -> ' + psFileName);
+            r(rr);
+        })
+        .catch(ee=>e(ee));
+    });
+}
+
+async function exportCards(genData) {
+    if (typeof(genData.tasks['export']) == 'undefined' || genData.tasks['export']) {
+        console.info('Export');
+        var inkscape = 'inkscape.exe';
+        if (_.isString(genData.tasks['export'])) {
+            inkscape = cbu.mergePath(genData.tasks['export'], inkscape);
+        }
+        else {
+            var exists = fs.existsSync(inkscape);
+            if (!exists) {
+                var found = await probeForFile(["/program files/inkscape", "/program files (x86)/inkscape"], ["inkscape.exe"]);
+                inkscape = found || inkscape;
+            }
+        }
+        
+        if (genData.buildOptions.maxInProgress <= 0){
+            await Promise.all(genData.files.map(file => exportFileAsync(genData, inkscape, file)));
+        }
+        else {
+            var queue = genData.files.map(file => () => exportFileAsync(genData, inkscape, file));
+            await Throttle.all(queue, {maxInProgress:genData.buildOptions.maxInProgress});
+        }
+        console.info('Exported');
+    }
+}
+
+function exportFileAsync(genData, inkscape, file){
+    console.info(' <- ' + file.fileName);
+    return new Promise((r,e)=>
+    {
+        var pngFileName = file.fileName.replace('.svg', '.png');
+        execAsync(`"${inkscape}" -e=${pngFileName} -i Card1 -d300 -z ${file.fileName}`, {cwd: genData.renderPath})
+        .then(rr=> {
+            console.info(' -> ' + pngFileName);
             r(rr);
         })
         .catch(ee=>e(ee));

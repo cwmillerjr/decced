@@ -13,7 +13,7 @@ var NW = require('./nodeWrapper').NodeWrapper;
 function CardBase(options) {
 
     this.options = parseOptions(options);
-    
+
     var Card = CardBase.caller;
 
     Card.prototype = Object.create(CardBase.prototype);
@@ -21,8 +21,8 @@ function CardBase(options) {
 
     var _self = this;
 
-    this.Name = function (val){
-        if (arguments.length > 0){
+    this.Name = function (val) {
+        if (arguments.length > 0) {
             _self.options.cardName = val;
         }
         else {
@@ -31,31 +31,46 @@ function CardBase(options) {
     }
 
     this.ManifestLoader = function (manifest, format) {
-        var parsedRows = cbu.parseManifest(manifest, format, _self.options.minManifestColumns);
-        if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '$'){
-            _self.options.columnNames = parsedRows[0];
-            _self.options.columnNames[0] = _self.options.columnNames[0].substr(1);
-            parsedRows.splice(0,1);
+        try {
+            var parsedRows = cbu.parseManifest(manifest, format, _self.options.minManifestColumns);
+            if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '$') {
+                _self.options.columnNames = parsedRows[0];
+                _self.options.columnNames[0] = _self.options.columnNames[0].substr(1);
+                parsedRows.splice(0, 1);
+            }
+            if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '^') {
+                _self.options.defaultManifest = parsedRows[0];
+                _self.options.defaultManifest[0] = _self.options.defaultManifest[0].substr(1);
+                parsedRows.splice(0, 1);
+            }
+            var mappedObjects = _.map(parsedRows, function (parsedRow) {
+                var mappedObject = _self.options.manifestMapper.call(_self, parsedRow, _self.options);
+                return mappedObject;
+            });
+            return mappedObjects;
         }
-        if (parsedRows.length > 0 && parsedRows[0].length > 0 && parsedRows[0][0][0] === '^'){
-            _self.options.defaultManifest = parsedRows[0];
-            _self.options.defaultManifest[0] = _self.options.defaultManifest[0].substr(1);
-            parsedRows.splice(0,1);
+        catch (e) {
+            console.error(`Could not parse manifest file.`);
+            e.messageShown = true;
+            console.error(e.message);
+            throw e;
         }
-        var mappedObjects = _.map(parsedRows, function (parsedRow) {
-            var mappedObject = _self.options.manifestMapper.call(_self, parsedRow, _self.options);
-            return mappedObject;
-        });
-        return mappedObjects;
     }
 
     this.Generate = async function (generationData, svgTemplate, manifest) {
 
+        var options = _self.options;
+        var cardFormatFileSuffix = options.format || "";
+        if (cardFormatFileSuffix) {
+            cardFormatFileSuffix = '.' + cardFormatFileSuffix;
+        }
+
         generationData = generationData || { totalSheetCount: -1, files: [] };
         var renderPath = generationData.renderPath || _self.options.renderPath;
+
         //normalize path
         renderPath = cbu.mergePath(renderPath);
-        if (!fs.existsSync(renderPath)){
+        if (!fs.existsSync(renderPath)) {
             await fs.mkdirAsync(renderPath);
         }
 
@@ -79,7 +94,8 @@ function CardBase(options) {
             svgTemplate = await fs.readFileAsync(svgTemplate);
         }
 
-        var alignTemplate = await fs.readFileAsync("./Alignment._svg");
+        var alignTemplate = await fs.readFileAsync(`./Alignment${cardFormatFileSuffix}._svg`);
+        var clipPathsTemplate = await fs.readFileAsync(`./ClipPaths${cardFormatFileSuffix}._svg`)
 
         //divine the manifest to use
         var format = 'tab';
@@ -97,32 +113,23 @@ function CardBase(options) {
         manifest = _self.ManifestLoader(manifest, format);
 
         var alignDom = await x2j.parseStringAsync(alignTemplate);
-        var svgDom = await x2j.parseStringAsync(svgTemplate);
+        var clipDom  = await x2j.parseStringAsync(clipPathsTemplate);
+        var svgDom   = await x2j.parseStringAsync(svgTemplate);
+
 
         removeAbsoluteReferences(svgDom);
-        var data = { manifest: manifest, totalSheetCount : totalSheetCount, self : _self, renderPath : renderPath, generationData : generationData };
-        await generateCardSheets(svgDom, data, alignDom);
+        var data = { manifest: manifest, totalSheetCount: totalSheetCount, self: _self, renderPath: renderPath, generationData: generationData };
+        await generateCardSheets(svgDom, data, alignDom, clipDom);
         totalSheetCount = data.totalSheetCount;
 
         generationData.totalSheetCount = totalSheetCount;
     }
 
-    async function generateCardSheets (svgDom, data, alignDom)
-    {
-        var manifest = data.manifest;
-        var totalSheetCount = data.totalSheetCount;
-        var _self = data.self;
-        var hasCards = false;
-        var cardTemplateNode;
-        var cardTemplateNodeParent;
-        var options = _self.options;
-        var renderPath =  data.renderPath;
-        var generationData = data.generationData;
-
-        if (svgDom.svg.g){
+    function injectAlignmentDomFragment(svgDom, alignDom){
+        if (svgDom.svg.g) {
             var found = false;
-            for (var i = 0; i < svgDom.svg.g.length; i++){
-                if (svgDom.svg.g[i] && svgDom.svg.g[i].$ && svgDom.svg.g[i].$.id == "AlignmentLayer"){
+            for (var i = 0; i < svgDom.svg.g.length; i++) {
+                if (svgDom.svg.g[i] && svgDom.svg.g[i].$ && svgDom.svg.g[i].$.id == "AlignmentLayer") {
                     found = true;
                     break;
                 }
@@ -131,74 +138,37 @@ function CardBase(options) {
                 svgDom.svg.g.push(alignDom.g);
             }
         }
+    }
 
-        setCropMarks (svgDom, 'front', options);
 
-        //find the card template element in the svg file
-        traverse(svgDom).forEach(function (node) {
-            if (node.$ && node.$.id) {
-                if (node.$.id == 'Card_T' || node.$.id === 'Card$') {
-                    cardTemplateNode = node;
-                    cardTemplateNodeParent = this.parent.node;
-                }
-                //check to see if there's a card body defined that has already been processed before getting here
-                else if (/^Card[0-8]$/.test(node.$.id)) {
-                    hasCards = true;
-                    return false;
-                }
-            }
-        });
+    async function generateCardSheets(svgDom, data, alignDom, clipDom) {
+        var manifest = data.manifest;
+        var totalSheetCount = data.totalSheetCount;
+        var _self = data.self;
+        var hasCards = false;
+        var cardTemplateNode;
+        var cardTemplateNodeParent;
+        var options = _self.options;
+        var renderPath = data.renderPath;
+        var generationData = data.generationData;
+        var cardsPerSheet = options.cardsPerSheet || 8;
+        var backs = null;
+        var face = 'front';
 
-        if (!hasCards) {
 
-            //root positions to place the cloned cards
-            var cardPositions = 
-                options.cardPositions || 
-                {
-                    x: [
-                        0,
-                        63.5,
-                        127,
-                        190.5
-                    ],
-                    y:[
-                        -108,
-                        -196.85
-                    ]
-                };
+        //root positions to place the cloned cards
+        var cardPositions = options.cardPositions;
+        var svgAttributes = options.svgAttributes;
+        var translateOffset = options.translateOffset;
+        var clip = options.clip;
 
-            //figure out if the svg needs positions to be offset
-            var cardPositionTranslations = [];
-            var xOff = 0;//-63.5;
-            if (options.translateOffset && options.translateOffset.x) {
-                xOff = options.translateOffset.x;
-            }
-            var yOff = 0;
-            if (options.translateOffset && options.translateOffset.y) {
-                yOff = options.translateOffset.y;
-            }
 
-            //create card position (svg "translate" attributes) array using the root and any offsets
-            for (var x=0;x<cardPositions.x.length; x++){
-                for (var y=0;y<cardPositions.y.length; y++){
-                    var xPos = cardPositions.x[x] + xOff;
-                    var yPos = cardPositions.y[y] + yOff;
-                    cardPositionTranslations.push(`translate(${xPos},${yPos})`);
-                }
-            }
-
-            //clone the template for each position and insert it into the svg.
-            cardPositionTranslations.forEach(function (translate, index) {
-                var aCard = traverse(cardTemplateNode).clone();
-                aCard.$.transform = translate;
-                traverse(aCard).forEach(function (node) {
-                    if (node.$ && node.$.id) {
-                        node.$.id = node.$.id.replace('_T', index + 1).replace('$', index + 1);
-                    }
-                });
-                cardTemplateNodeParent.push(aCard);
-            });
+        var nodePredicate = function(node) {
+            return (node.$.id == 'Card_T' || node.$.id === 'Card$');
         }
+
+        //generate card template
+        generateTemplate(options, svgDom, alignDom, clipDom, cardPositions, nodePredicate, face, clip, svgAttributes, translateOffset, cardsPerSheet);
 
         //get a dictionary of elements by their ids.
         var svgMap = cbu.mapSvg(svgDom);
@@ -206,32 +176,35 @@ function CardBase(options) {
         //delete existing rendered svg pages.
         cbu.purgeSheets(options.cardName, renderPath);
 
-        var xmlBuilder = new x2j.Builder({renderOpts: {pretty:true}});
+        var xmlBuilder = new x2j.Builder({ renderOpts: { pretty: true } });
 
         var cardSheet = 1;
         var cardIndex = 1;
         var countPrefix = '';
 
         //load the card back svg file to render after each card sheet for printing 2 sided
-        var backs = null; 
+        var backs = null;
         if (options.backs) {
-            var svgDom2 = await loadBacks(options);
-            setCropMarks (svgDom2, 'back', options);
-            backs =  xmlBuilder.buildObject(svgDom2);
+            var svgDom2 = await loadBacks(options, alignDom, clipDom);
+            injectAlignmentDomFragment(svgDom2, alignDom)
+            setCropMarks(svgDom2, 'back', options);
+            backs = xmlBuilder.buildObject(svgDom2);
         }
 
         var blackout = null;
-        if (options.blackout){
+        if (options.blackout) {
             var svgDom2 = await loadBlackout(options);
-            setCropMarks (svgDom2, 'blackout', options, false);
-            blackout =  xmlBuilder.buildObject(svgDom2);
+            injectAlignmentDomFragment(svgDom2, alignDom)
+            setCropMarks(svgDom2, 'blackout', options, false);
+            blackout = xmlBuilder.buildObject(svgDom2);
         }
 
         var blank = null;
-        if (options.blackout && options.backs){
+        if (options.blackout && options.backs) {
             var svgDom2 = await loadBlank(options);
-            setCropMarks (svgDom2, 'blank', options, false);
-            blank =  xmlBuilder.buildObject(svgDom2);
+            injectAlignmentDomFragment(svgDom2, alignDom)
+            setCropMarks(svgDom2, 'blank', options, false);
+            blank = xmlBuilder.buildObject(svgDom2);
         }
 
         var docs = [null, blackout, backs, blank];
@@ -248,68 +221,74 @@ function CardBase(options) {
             stopAt = startAt + take;
         }
 
-        for (var i = 0; i < manifest.length; i++){
+        var cardManifests = [];
+
+        for (var i = 0; i < manifest.length; i++) {
             var item = manifest[i];
+            cardManifests.push(item);
             //map the cards on the page
             options.svgMapper.call(_self, item, cardIndex, svgMap, options);
             cardIndex++;
-                //render a page once you've rendered the number of cards on the page (currently only 8 is available)
-                if (cardIndex > 8) {
-                    var svgDocument = xmlBuilder.buildObject(svgDom);
-                    
-                    if (totalSheetCount >= 0) {
-                        totalSheetCount++;
-                    }
+            //render a page once you've rendered the number of cards on the page
+            if (cardIndex > cardsPerSheet) {
+                var svgDocument = xmlBuilder.buildObject(svgDom);
 
-                    docs[0] = svgDocument;
-                    if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)){
-                        await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
-                    }
-                    cardSheet++;
-                    cardIndex = 1;
+                if (totalSheetCount >= 0) {
+                    totalSheetCount++;
+                }
+
+                docs[0] = svgDocument;
+                if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)) {
+                    await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, cardManifests, docs);
+                    cardManifests = [];
+                }
+                cardSheet++;
+                cardIndex = 1;
             }
         }
-        if (options.blankCards){
+        if (options.blankCards) {
             var r = /^([0-9]+)(s|c)?$/;
             var m = options.blankCards.match(r);
-            var x = 0;
-            if (m[2] === 's'){
-                x = 8 * m[1];
-                if (cardIndex > 1 && cardIndex < 9){
-                    x += (9 - cardIndex);
+            var additionalCards = 0;
+            //number of cards requested is in sheets
+            if (m[2] === 's') {
+                additionalCards = cardsPerSheet * m[1];
+                if (cardIndex > 1 && cardIndex <= cardsPerSheet) {
+                    additionalCards += ((cardsPerSheet + 1) - cardIndex);
                 }
             }
             else {
-                x = m[1] * 1;
+                additionalCards = m[1] * 1;
             }
             var empty = options.manifestMapper.call(_self);
-            for (;x>0;x--) {
+            for (; additionalCards > 0; additionalCards--) {
                 //map the cards on the page
                 options.svgMapper.call(_self, empty, cardIndex, svgMap, options);
+                cardManifests.push(empty);
                 cardIndex++;
-                //render a page once you've rendered the number of cards on the page (currently only 8 is available)
-                if (cardIndex > 8) {
+                //render a page once you've rendered the number of cards on the page
+                if (cardIndex > cardsPerSheet) {
                     var svgDocument = xmlBuilder.buildObject(svgDom);
-                    
+
                     if (totalSheetCount >= 0) {
                         totalSheetCount++;
                     }
 
                     docs[0] = svgDocument;
-                    if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)){
-                        await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
+                    if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)) {
+                        await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, cardManifests, docs);
+                        cardManifests = [];
                     }
 
                     cardSheet++;
                     cardIndex = 1;
                 }
             };
-
         }
         //if you have a partial sheet, pad out the remaining unfilled positions (otherwise they will render the previous page's cards) and save the partial sheet
-        if (cardIndex != 1 && cardIndex < 9) {
+        if (cardIndex != 1 && cardIndex <= cardsPerSheet) {
             var empty = options.manifestMapper.call(_self);
-            while (cardIndex < 9) {
+            while (cardIndex <= cardsPerSheet) {
                 //what's the difference?
                 if (svgMap['Card' + cardIndex]) {
                     //blank card
@@ -318,6 +297,7 @@ function CardBase(options) {
                 else {
                     options.svgMapper.call(_self, empty, cardIndex, svgMap, options);
                 }
+                cardManifests.push(empty);
                 cardIndex++;
             }
             var svgDocument = xmlBuilder.buildObject(svgDom);
@@ -327,47 +307,141 @@ function CardBase(options) {
 
             docs[0] = svgDocument;
             if (cardSheet >= startAt && (!stopAt || cardSheet < stopAt)) {
-                await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, docs);
+                await saveSheets(totalSheetCount, cardSheet, renderPath, generationData, cardManifests, docs);
             }
-            
-
             cardSheet++;
             cardIndex = 1;
         }
         data.totalSheetCount = totalSheetCount;
     }
 
-    function setCropMarks (dom, cropMarkKey, options, keepStandardAlignmentHoles) {
-        if (typeof(keepStandardAlignmentHoles) === 'undefined'){
-            keepStandardAlignmentHoles = true;
-        }
-        if (options.cropMarks && (options.cropMarks === cropMarkKey || _.isArray(options.cropMarks) || _.includes(options.cropMarks, cropMarkKey))) {
-            traverse(dom).forEach(function (node) {
-                if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
-                    _.forEach(this.parent.node.g, function(alignmentNode){
-                        cbu.setDisplay(alignmentNode.$, alignmentNode.$.id == 'StandardAlignmentHoles' && keepStandardAlignmentHoles);
-                    });
+    function generateTemplate(options, svgDom, alignDom, clipDom, cardPositions, nodePredicate, face, clip, svgAttributes, translateOffset, cardsPerSheet) {
+        injectAlignmentDomFragment(svgDom, alignDom);
+        setCropMarks(svgDom, face, options);
+        
+        if (svgDom.svg.defs && clip) {
+            if (typeof (svgDom.svg.defs[0].clipPath) === 'undefined') {
+                svgDom.svg.defs[0].clipPath = [];
+            }
+            for (var def of clipDom.defs.clipPath) {
+                for (var existingDef of svgDom.svg.defs[0].clipPath) {
+                    if (def.id == existingDef.id) {
+                        continue;
+                    }
                 }
-            });
+                svgDom.svg.defs[0].clipPath.push(def);
+            }
         }
+
+        if (svgAttributes) {
+            for (var attribute in svgAttributes) {
+                svgDom.svg.$[attribute] = svgAttributes[attribute];
+            }
+        }
+
+        //find the card template element in the svg file
+        traverse(svgDom).forEach(function (node) {
+            if (node.$ && node.$.id) {
+                if (nodePredicate(node)) {
+                    cardTemplateNode = node;
+                    cardTemplateNodeParent = this.parent.node;
+                }
+            }
+        });
+
+        //figure out if the svg needs positions to be offset
+        var cardPositionTranslations = [];
+        var xOff = 0;
+        var yOff = 0;
+
+        if (translateOffset) {
+            if (translateOffset.x) {
+                xOff = translateOffset.x;
+            }
+            if (translateOffset.y) {
+                yOff = translateOffset.y;
+            }
+        }
+
+        //create card position (svg "translate" attributes) array using the root and any offsets
+        for (var x = 0; x < cardPositions.x.length; x++) {
+            for (var y = 0; y < cardPositions.y.length; y++) {
+                var xPos = cardPositions.x[x] + xOff;
+                var yPos = cardPositions.y[y] + yOff;
+                cardPositionTranslations.push(`translate(${xPos},${yPos})`);
+            }
+        }
+
+        var cardsInSheet = 0;
+        //clone the template for each position and insert it into the svg.
+        cardPositionTranslations.forEach(function (translate, index) {
+            if (cardsInSheet++ < cardsPerSheet) {
+                var aCard = traverse(cardTemplateNode).clone();
+                aCard.$.transform = translate;
+                if (clip) {
+                    aCard.$["clip-path"] = `url(#card${face}ClipPath)`;
+                }
+                traverse(aCard).forEach(function (node) {
+                    if (node.$ && node.$.id) {
+                        node.$.id = node.$.id.replace('_T', index + 1).replace('$', index + 1);
+                    }
+                });
+                cardTemplateNodeParent.push(aCard);
+            }
+        });
     }
 
-    async function saveSheet(count, cardSheet, renderPath, generationData, cardSheetOrdinal, svgDocument) {
+    function setCropMarks(dom, cropMarkKey, options, showStandardAlignmentHoles) {
+
+        if (typeof (showStandardAlignmentHoles) === 'undefined') {
+            showStandardAlignmentHoles = true;
+        }
+
+        var showTicks = false;
+
+        if (options.cropMarks && (options.cropMarks === cropMarkKey || (_.isArray(options.cropMarks) && _.includes(options.cropMarks, cropMarkKey)))) {
+            showTicks = true;
+        }
+
+        traverse(dom).forEach(function (node) {
+            if (this.parent && this.parent.node && this.parent.node.$ && this.parent.node.$.id == 'Alignment') {
+                _.forEach(this.parent.node.g, function (alignmentNode) {
+                    var display = false;
+                    switch (alignmentNode.$.id) {
+                        case 'Ticks':
+                        case 'ExtendedTicks':
+                            display = showTicks;
+                            break;
+                        case 'StandardAlignmentHoles':
+                            display = showStandardAlignmentHoles;
+                            break;
+                        default:
+                            display = false;
+                    }
+                    cbu.setDisplay(alignmentNode.$, display);
+                });
+            }
+        });
+    }
+
+    async function saveSheet(count, cardSheet, renderPath, generationData, cardSheetOrdinal, cardManifests, svgDocument) {
         var prefix = '0000' + count.toString();
         prefix = prefix.substr(prefix.length - 4);
-        var fileName = prefix + '.' + cardSheetOrdinal + '_' + _self.options.cardName + '_Sheet' + cardSheet + '.svg';
+        var fileName = _self.options.fileNameGenerator(prefix, cardSheetOrdinal, cardSheet, _self.options, cardManifests)
         var sheetPath = cbu.mergePath(renderPath, fileName);
-        console.log('      ' + fileName);
-        generationData.files.push({
-            fileName: fileName,
-            cardName: _self.options.cardName
-        });
-        await fs.writeFileAsync(sheetPath, svgDocument);
+        if (!_.some(generationData.files, ['fileName', fileName])) {
+            console.log('      ' + fileName);
+            generationData.files.push({
+                fileName: fileName,
+                cardName: _self.options.cardName
+            });
+            await fs.writeFileAsync(sheetPath, svgDocument);
+        }
     }
 
-    async function saveSheets(count, cardSheet, renderPath, generationData, svgDocument1, svgDocument2, svgDocument3) {
+    async function saveSheets(count, cardSheet, renderPath, generationData, cardManifests, svgDocument1, svgDocument2, svgDocument3) {
         var docs;
-        if (_.isArray(svgDocument1)){
+        if (_.isArray(svgDocument1)) {
             docs = svgDocument1;
         }
         else {
@@ -375,19 +449,19 @@ function CardBase(options) {
         }
 
         var c = 0;
-        for (var i = 0 ;i < docs.length;i++) {
-            if (docs[i]){
-                await saveSheet(count, cardSheet, renderPath, generationData, c++, docs[i]);
+        for (var i = 0; i < docs.length; i++) {
+            if (docs[i]) {
+                await saveSheet(count, cardSheet, renderPath, generationData, c++, cardManifests, docs[i]);
             }
         }
     }
 
     function parseOptions(options) {
-        if (!options.rootPath){
+        if (!options.rootPath) {
             options.rootPath = '../';
         }
-        if (!options.cardsPath){
-            options.cardsPath = cbu.mergePath(options.rootPath,'Cards');
+        if (!options.cardsPath) {
+            options.cardsPath = cbu.mergePath(options.rootPath, 'Cards');
         }
         if (!options.cardFace) {
             options.cardFace = 'CardFace.svg';
@@ -398,7 +472,7 @@ function CardBase(options) {
         if (!options.cardPath) {
             options.cardPath = cbu.mergePath(options.cardsPath, options.cardName);
         }
-        if (!options.manifestsPath){
+        if (!options.manifestsPath) {
             options.manifestsPath = cbu.mergePath(options.rootPath, 'Manifests');
         }
         if (!options.manifestPath) {
@@ -420,11 +494,11 @@ function CardBase(options) {
             options.renderPath = cbu.mergePath(options.renderPath, '/');
         }
 
-        if (!options.manifestMapper){
+        if (!options.manifestMapper) {
             options.manifestMapper = defaultManifestMapper;
         }
-    
-        if (!options.svgMapper){
+
+        if (!options.svgMapper) {
             options.svgMapper = defaultSvgMapper;
         }
 
@@ -435,19 +509,19 @@ function CardBase(options) {
             options || {});
     }
 
-    function defaultManifestMapper (columns, options) {
+    function defaultManifestMapper(columns, options) {
         var currentColumn = 0;
         columns = columns || [];
         var cardManifest = {};
-        if (typeof(columns) === 'undefined' || columns === null || columns.length == 0){
+        if (typeof (columns) === 'undefined' || columns === null || columns.length == 0) {
             options = _self.options;
-            for (var i = 0; i < options.columnNames.length; i++){
+            for (var i = 0; i < options.columnNames.length; i++) {
                 cardManifest[options.columnNames[i]] = null;
             }
             _.assign(cardManifest, options.defaultManifest || {});
         }
-        else if (options.columnNames){
-            for (var i = 0; i < options.columnNames.length; i++){
+        else if (options.columnNames) {
+            for (var i = 0; i < options.columnNames.length; i++) {
                 cardManifest[options.columnNames[i]] = columns[i];
             }
         }
@@ -457,21 +531,21 @@ function CardBase(options) {
         return cardManifest;
     }
 
-    function defaultNodeMapper (cardIndex, svgMap, options) {
+    function defaultNodeMapper(cardIndex, svgMap, options) {
         var map = {}
-        if (options.columnNames){
-            for (var i = 0; i < options.columnNames.length; i++){
+        if (options.columnNames) {
+            for (var i = 0; i < options.columnNames.length; i++) {
                 map[options.columnNames[i]] = NW.wrap(svgMap[options.columnNames[i] + cardIndex]);
             }
         }
         return map;
     }
 
-    this.probeImage = function (imageName, options){
+    this.probeImage = function (imageName, options) {
         if (!imageName) {
             imageName = '';
         } else if (imageName.indexOf('/') < 0) {
-            if (imageName.indexOf('.' < 0)){
+            if (imageName.indexOf('.' < 0)) {
                 imageName = imageName + '.png';
             }
             imageName = cbu.probePaths(imageName, options.assetPath, options.cardPath, cbu.mergePath(options.rootPath, 'Assets'));
@@ -479,12 +553,12 @@ function CardBase(options) {
         return imageName;
     }
 
-    function defaultSvgMapper (manifest, cardIndex, svgMap, options) {
+    function defaultSvgMapper(manifest, cardIndex, svgMap, options) {
         var map = defaultNodeMapper(cardIndex, svgMap, options);
-        if (options.columnNames){
-            for (var i = 0; i < options.columnNames.length; i++){
+        if (options.columnNames) {
+            for (var i = 0; i < options.columnNames.length; i++) {
                 var nodeMap = map[options.columnNames[i]];
-                if (nodeMap._raw.type === 'image'){
+                if (nodeMap._raw.type === 'image') {
                     var val = manifest[options.columnNames[i]];
                     val = _self.probeImage(val, options);
                     nodeMap.val(val);
@@ -497,23 +571,45 @@ function CardBase(options) {
         }
     }
 
-    async function loadBacks (options) {
-        return await loadSvg(options, 'cardBack', 'CardBack.svg');
+    async function loadBacks(options, alignDom, clipDom) {
+        try {
+            var face = 'back';
+            var cardPositions = options.cardPositions;
+            var svgAttributes = options.svgAttributes;
+            var translateOffset = options.translateBackOffset;
+            var clip = options.clip;
+            var cardsPerSheet = options.cardsPerSheet || 8;
+            var nodePredicate = function(node) {
+                return (node.$.id == 'CardBack');
+            }
+
+            var backDom = await loadSvg(options, 'cardBack', 'CardBack.svg');
+
+            generateTemplate(options, backDom, alignDom, clipDom, cardPositions, nodePredicate, face, clip, svgAttributes, translateOffset, cardsPerSheet);
+
+            return backDom;
+        }
+        catch (e) {
+            console.error(`Could not generate card back dom.`);
+            e.messageShown = true;
+            console.error(e.message);
+            throw e;
+        }
     }
 
-    async function loadSvg (options, prop, name) {
+    async function loadSvg(options, prop, name) {
         var candidatePath = options[prop];
-        if (!/.svg$/.test(candidatePath)){
+        if (!/.svg$/.test(candidatePath)) {
             candidatePath = cbu.mergePath(candidatePath, name);
         }
-        if (!fs.existsSync(candidatePath)){
+        if (!fs.existsSync(candidatePath)) {
             var testPath = cbu.mergePath(options.cardPath, candidatePath);
-            if (fs.existsSync(testPath)){
+            if (fs.existsSync(testPath)) {
                 candidatePath = testPath;
             }
             else {
                 testPath = cbu.mergePath(options.cardsPath, candidatePath);
-                if (fs.existsSync(testPath)){
+                if (fs.existsSync(testPath)) {
                     candidatePath = testPath;
                 }
                 else {
@@ -530,25 +626,24 @@ function CardBase(options) {
         return dom;
     }
 
-    function removeAbsoluteReferences(dom){
+    function removeAbsoluteReferences(dom) {
         traverse(dom).forEach(function (node) {
             if (node.$) {
-                if (node.$["sodipodi:absref"]){
+                if (node.$["sodipodi:absref"]) {
                     delete node.$["sodipodi:absref"];
                 }
-                if (node.$["xlink:href"] && node.$["xlink:href"].slice(0, 3) === '../')
-                {
+                if (node.$["xlink:href"] && node.$["xlink:href"].slice(0, 3) === '../') {
                     node.$["xlink:href"] = node.$["xlink:href"].slice(3);
                 }
             }
-        }); 
+        });
     }
 
-    async function loadBlackout (options) {
+    async function loadBlackout(options) {
         return await loadSvg(options, 'cardBlackout', 'CardBlackout.svg');
     }
 
-    async function loadBlank (options) {
+    async function loadBlank(options) {
         return await loadSvg(options, 'cardBlank', 'CardBlank.svg');
     }
 }

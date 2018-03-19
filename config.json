@@ -15,8 +15,28 @@
             "tasks": {
                 "render" : true,
                 "convert" : true,
-                "compile" : true,
-                "clean" : ["ps", "svg"]
+                "compile" : true
+            }
+        },
+        "tgc": {
+            "cards": [
+                "DefaultExample",
+                "CustomExample",
+                "PokerExample"
+            ],
+            "renderPath": "../Renders",
+            "tasks": {
+                "render" : true,
+                "convert" : false,
+                "export" : true,
+                "compile" : false,
+                "clean" : ["svg"]
+            },
+            "options" : {
+                "cardsPerSheet" : 1,
+                "clip" : false,
+                "backs" : true,
+                "fileNameGenerator" : "tgc"
             }
         },
         "proofs": {
@@ -42,20 +62,8 @@
                 "breakoutPdfs" : true,
                 "skipMainPdf" : true
             }
-        },
-        "poker": {
-            "cards": [
-                "PokerExample"
-            ],
-            "renderPath": "../Renders",
-            "cleanup": [
-                "ps",
-                "svg"
-            ],
-            "tasks": {
-                "render" : true
-            }
         }
     },
-    "options" : { }
+    "options" : {
+    }
 }

@@ -1,4 +1,5 @@
 {
+    "generateFace" :true,
     "backs" : true,
     "blackout" : false,
     "blankCards" : "0s",
@@ -6,9 +7,18 @@
     "cardBlank" : "../Common",        
     "cardPositions" : {
             "x": [0, 63.5, 127, 190.5],
-            "y":[-108, -196.85]
+            "y":[-114.3, -203.2]
         },
     "cropMarks" : ["back"],
     "replaceOutput" : true,
-    "maxInProgress" : 0
+    "maxInProgress" : 4,
+    "clip" : true,
+    "translateOffset" : {
+        "x" : 0
+    },
+    "cardBack" : "CardFace.svg",
+    "generateBacks" :true,
+    "translateBackOffset" : {
+        "x" : -127
+    }
 }

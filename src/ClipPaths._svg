@@ -1,0 +1,24 @@
+<defs>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="cardClipFrontPath">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect2718"
+         width="63.499996"
+         height="88.900002"
+         x="12.700001"
+         y="222.25" />
+    </clipPath>
+	<clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="cardBackClipPath">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect2718"
+         width="63.499996"
+         height="88.900002"
+         x="139.70001"
+         y="222.25" />
+    </clipPath>
+</defs>

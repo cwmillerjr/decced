@@ -3,10 +3,9 @@
   "version": "1.2.0",
   "description": "Templated playing card generator",
   "homepage": "https://cwmillerjr.github.io/decced/",
-  "repository":   
-  {
-    "type" : "git",
-    "url" : "https://github.com/cwmillerjr/decced.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cwmillerjr/decced.git"
   },
   "main": "./src/cardBuilder.js",
   "dependencies": {
